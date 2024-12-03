@@ -4,10 +4,15 @@ import gleam/result
 import gleam/string
 import simplifile
 
-pub fn read_lines(filepath: String) {
+pub fn read(filepath: String) {
   filepath
   |> simplifile.read
   |> result.unwrap("")
+}
+
+pub fn read_lines(filepath: String) {
+  filepath
+  |> read
   |> string.trim_end
   |> string.split("\n")
 }
