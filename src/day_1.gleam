@@ -1,30 +1,15 @@
-import utils.{format_sum, read_lines}
+import utils
 import gleam/int
 import gleam/io
 import gleam/list
-import gleam/result
-import gleam/string
-
-fn parse_entry(entry: String) {
-  entry
-  |> string.trim
-  |> int.base_parse(10)
-  |> result.unwrap(0)
-}
-
-fn parse_row(line: String) {
-  line
-  |> string.split("  ")
-  |> list.map(parse_entry)
-}
 
 pub fn main() {
   let filepath = "./data/day_1.txt"
   let assert [left, right] =
     filepath
-    |> read_lines
+    |> utils.read_lines
     |> list.filter(fn(line) { line != "" })
-    |> list.map(parse_row)
+    |> list.map(utils.parse_row)
     |> list.transpose
 
 
@@ -43,8 +28,8 @@ pub fn main() {
        })
     |> list.filter(fn (n) { n > 0 })
 
-  let sum_distance = format_sum(distances, "Distance: ")
-  let sum_similarity = format_sum(similarity, "Similarity: ")
+  let sum_distance = utils.format_sum(distances, "Distance: ")
+  let sum_similarity = utils.format_sum(similarity, "Similarity: ")
 
   io.println(sum_distance)
   io.println(sum_similarity)
