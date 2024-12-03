@@ -3,22 +3,12 @@ import gleam/int
 import gleam/list
 import gleam/io
 
-/// Given a list of integers of length n, return n distinct, same-ordered sublists of length n-1
-fn get_sublists(l: List(Int)) {
-  l
-  |> list.length
-  |> list.range(0)
-  |> list.map(fn(i) {
-    let left = l
-    |> list.reverse
-    |> list.drop(list.length(l) - i)
-    |> list.reverse
-    let right = l
-    |> list.drop(i + 1)
-    list.flatten([left, right])
-  })
-  |> list.drop(1)
-}
+// Part 1 is more or less straightforward. The interesting thing is the pairwise comparison
+// with a given comparator, making `ascending(l)` and `descending(l)` possible without
+// too much code duplication.
+// The more elegant approach could've been to infer whether the list is ascending or descending
+// by comparing the first and second elements, and then using that to determine the comparator.
+// This way, we're checking the list twice, but hey, what's a factor of two between friends?
 
 /// Returns true if difference between parameters is within safe range (1 - 3)
 fn safe_dist(a: Int, b: Int) {
@@ -56,12 +46,6 @@ fn any_sublist_monotonic(l: List(Int)) {
   |> list.any(monotonic)
 }
 
-// More or less straightforward. The interesting thing is the pairwise comparison
-// with a given comparator, making `ascending(l)` and `descending(l)` possible without
-// too much code duplication.
-// The more elegant approach could've been to infer whether the list is ascending or descending
-// by comparing the first and second elements, and then using that to determine the comparator.
-// This way, we're checking the list twice, but hey, what's a factor of two between friends?
 pub fn part_1() {
   "./data/day_2.txt"
   |> utils.read_lines
@@ -69,15 +53,35 @@ pub fn part_1() {
   |> list.filter(monotonic)
   |> list.length
   |> utils.format_int
-  |> io.println
 }
 
-// This one is a bit more tricky. This uses brute force to generate all possible distinct sublists
-// of same order and length n-1, checks all of them for monotonocity and safe distances and then passes
-// if any of them pass.
+
+// This one is a bit more tricky. The techniques are mostly the same as the one used in part 1, save
+// for allowing one constraint violation per row. For that, this solution uses brute force to generate
+// all possible distinct sublists of same ordering and length n-1, checks all of them for monotonocity
+// and safe distances and then passes if any of them pass.
 // The more efficient way to solve this would be to keep count of the number of
-// unsafe distances/monotonicity violations in the list, and allow one.
+// unsafe distances/monotonicity violations in the list during the entire comparison, and allow one.
 // That would still allow for pairwise comparisons and thus be O(n).
+
+/// Given a list of integers of length n, return n distinct, same-ordered sublists of length n-1
+fn get_sublists(l: List(Int)) {
+  l
+  |> list.length
+  |> list.range(0)
+  |> list.map(fn(i) {
+    // Remove ith element from list
+    let left = l
+    |> list.reverse
+    |> list.drop(list.length(l) - i)
+    |> list.reverse
+    let right = l
+    |> list.drop(i + 1)
+    list.flatten([left, right])
+  })
+  |> list.drop(1) // implementation artifact, first sublist is the original list
+}
+
 pub fn part_2() {
   "./data/day_2.txt"
   |> utils.read_lines
@@ -85,11 +89,11 @@ pub fn part_2() {
   |> list.filter(any_sublist_monotonic)
   |> list.length
   |> utils.format_int
-  |> io.println
-
 }
 
 pub fn main() {
   part_1()
+  |> utils.print_with_part("Part 1")
   part_2()
+  |> utils.print_with_part("Part 2")
 }

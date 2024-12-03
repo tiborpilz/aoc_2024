@@ -1,3 +1,4 @@
+import gleam/io
 import gleam/list
 import gleam/int
 import gleam/result
@@ -38,6 +39,14 @@ pub fn format_int(n: Int) {
 
 pub fn sum(l: List(Int)) {
   list.fold(l, 0, fn(acc, n) { acc + n })
+}
+
+pub fn add_prefix(s: String, prefix: String) {
+  prefix <> s
+}
+
+pub fn print_with_part(result: String, part: String) {
+  io.println("(" <> part <> "): " <> result)
 }
 
 pub fn format_sum(l: List(Int), prefix: String) {
