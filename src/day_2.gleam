@@ -40,12 +40,6 @@ fn monotonic(l: List(Int)) {
   ascending(l) || descending(l)
 }
 
-fn any_sublist_monotonic(l: List(Int)) {
-  l
-  |> get_sublists
-  |> list.any(monotonic)
-}
-
 pub fn part_1() {
   "./data/day_2.txt"
   |> utils.read_lines
@@ -58,7 +52,7 @@ pub fn part_1() {
 
 // This one is a bit more tricky. The techniques are mostly the same as the one used in part 1, save
 // for allowing one constraint violation per row. For that, this solution uses brute force to generate
-// all possible distinct sublists of same ordering and length n-1, checks all of them for monotonocity
+// all possible distinct sublists of same ordering and length n-1, checks all of them for monotonicity
 // and safe distances and then passes if any of them pass.
 // The more efficient way to solve this would be to keep count of the number of
 // unsafe distances/monotonicity violations in the list during the entire comparison, and allow one.
@@ -86,7 +80,9 @@ pub fn part_2() {
   "./data/day_2.txt"
   |> utils.read_lines
   |> list.map(utils.parse_row)
-  |> list.filter(any_sublist_monotonic)
+  |> list.filter(fn(l) {
+      l |> get_sublists |> list.any(monotonic)
+    })
   |> list.length
   |> utils.format_int
 }

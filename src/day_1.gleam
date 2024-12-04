@@ -21,7 +21,7 @@ pub fn get_distances(left: List(Int), right: List(Int)) {
 }
 
 /// Returns the pairwise similarities between the two lists. Sorting doesn't matter
-/// Here, as similarities are calculated based on the number of occurrences of the given number
+/// here, as similarities are calculated based on the number of occurrences of the given number
 pub fn get_similarities(left: List(Int), right: List(Int)) {
   left
   |> list.map(fn (n) {

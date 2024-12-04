@@ -12,7 +12,7 @@ pub fn load_rows() {
 // For part 1, matching all regexes like `mul(1,4)`, capturing the numbers and then
 // summing the products is enough.
 
-/// Parse a string and return the sum of the products defined by the `mul(a, b)` pattern
+/// Parse a string and return the sum of the products defined by `mul(a, b)` expressions
 pub fn get_mult_sum(s: String) {
   let assert Ok(mul_statements) = from_string("mul\\(([0-9]+),([0-9]+)\\)")
 
