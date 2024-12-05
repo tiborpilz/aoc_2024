@@ -44,7 +44,7 @@ fn check_page(page: List(Int), rules: List(#(Int, Int))) {
   }
 }
 
-fn get_valid_pages(data: List(String)) {
+fn parse_data(data: List(String)) {
   let rules = data
   |> list.take_while(fn (row) {
       row != ""
@@ -57,10 +57,13 @@ fn get_valid_pages(data: List(String)) {
   let pages = pages_raw
   |> list.map(parse_pages)
 
-  pages
-  |> list.filter(fn (page) {
-    check_page(page, rules)
-  })
+  #(pages, rules)
+}
+
+fn get_valid_pages(data: List(String)) {
+  let #(pages, rules) = parse_data(data)
+
+  pages |> list.filter(fn (page) { check_page(page, rules) })
 }
 
 pub fn sum_middle_values(pages: List(List(Int))) {
