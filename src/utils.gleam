@@ -61,3 +61,8 @@ pub fn join(chars: List(String)) {
   chars
   |> list.fold("", fn (acc, char) { acc <> char })
 }
+
+/// Gets the entry of a 1D-List at a given index
+pub fn at(data: List(a), index: Int) {
+  data |> list.take(index + 1) |> list.last
+}
