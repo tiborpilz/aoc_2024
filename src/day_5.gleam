@@ -30,20 +30,6 @@ fn parse_pages(page: String) {
   })
 }
 
-fn satisfies_all_rules(a: Int, rest: List(Int), rules: List(#(Int, Int))) {
-  rest
-  |> list.any(fn (b) { list.contains(rules, #(a, b)) })
-  |> bool.negate
-}
-
-fn check_page(page: List(Int), rules: List(#(Int, Int))) {
-  case page {
-    [] -> True
-    [_] -> True
-    [a, ..rest] -> satisfies_all_rules(a, rest, rules) && check_page(rest, rules)
-  }
-}
-
 fn parse_data(data: List(String)) {
   let rules = data
   |> list.take_while(fn (row) {
@@ -60,18 +46,27 @@ fn parse_data(data: List(String)) {
   #(pages, rules)
 }
 
+fn rest_satisfies_all_rules(a: Int, rest: List(Int), rules: List(#(Int, Int))) {
+  rest
+  |> list.any(fn (b) { list.contains(rules, #(a, b)) })
+  |> bool.negate
+}
+
+// Empty and 1 element lists are always valid
+// For the others, check if the first element satisfies all rules with the rest of the list (pairwise)
+// and then check the rest of the list
+fn check_page(page: List(Int), rules: List(#(Int, Int))) {
+  case page {
+    [] -> True
+    [_] -> True
+    [a, ..rest] -> rest_satisfies_all_rules(a, rest, rules) && check_page(rest, rules)
+  }
+}
+
 fn get_valid_pages(data: List(String)) {
   let #(pages, rules) = parse_data(data)
 
   pages |> list.filter(fn (page) { check_page(page, rules) })
-}
-
-fn get_invalid_pages(data: List(String)) {
-  let #(pages, rules) = parse_data(data)
-
-  pages |> list.filter(fn (page) {
-    check_page(page, rules) |> bool.negate
-  })
 }
 
 pub fn sum_middle_values(pages: List(List(Int))) {
@@ -90,7 +85,7 @@ pub fn sum_middle_values(pages: List(List(Int))) {
   |> utils.sum
 }
 
-// Hacky, assumes that a and b are in the list only once
+// Assumes that a and b are in the list only once
 fn swap(input: List(Int), a: Int, b: Int) {
   case list.contains(input, a) && list.contains(input, b) {
     False -> input
@@ -117,8 +112,8 @@ pub fn part_1() {
 // Basically, keep swapping until the page is valid
 // Since this is a naive approach we run the risk of entering loops where this function
 // keeps swapping forever.
-// We _could_ build some sort of solver to check which swaps we need to do
-// to get a valid page (which definitely is NP-hard)
+// We _could_ build some sort of solver to check which order we need to do the swaps
+// in to get a valid page (which is NP-hard, and, more importantly, effort)
 // orrrrrrr
 // we just randomize the rules every time, lol
 pub fn sort_until_valid(page: List(Int), rules: List(#(Int, Int))) {

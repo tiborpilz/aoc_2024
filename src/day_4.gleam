@@ -7,22 +7,17 @@ import gleam/string
 import gleam/list
 import utils
 
-fn join(chars: List(String)) {
-  chars
-  |> list.fold("", fn (acc, char) { acc <> char })
-}
-
 fn check(chars: List(String)) {
   chars
   |> list.window(4)
-  |> list.map(join)
+  |> list.map(utils.join)
   |> list.filter(fn (window) { window == "XMAS" || window == "SAMX" })
   |> list.length
 }
 
 fn count_crosses(crosses: List(List(String))) {
   crosses
-  |> list.map(join)
+  |> list.map(utils.join)
   |> list.filter(fn (cross) { cross == "MASSAM" || cross == "SAMMAS" || cross == "SAMSAM" || cross == "MASMAS" })
   |> list.length
 }

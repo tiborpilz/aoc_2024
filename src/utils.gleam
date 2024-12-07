@@ -56,3 +56,8 @@ pub fn format_sum(l: List(Int), prefix: String) {
 pub fn to_string(n: Int) {
   n |> int.to_base_string(10) |> result.unwrap("")
 }
+
+pub fn join(chars: List(String)) {
+  chars
+  |> list.fold("", fn (acc, char) { acc <> char })
+}
