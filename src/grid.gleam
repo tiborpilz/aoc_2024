@@ -1,3 +1,4 @@
+import gleam/result
 import gleam/int
 import gleam/list
 import gleam/dict
@@ -49,48 +50,26 @@ pub fn size(grid: Grid(a)) -> #(Int, Int) {
 
 ///
 /// Gets the row of a given index as a list
-pub fn get_row(grid: Grid(a), index: Int) -> List(a) {
-  grid
-  |> dict.filter(fn (key, _) {
-    let #(row_index, _) = key
-    row_index == index
-  })
-  |> dict.to_list
-  |> list.sort(fn (pair_a, pair_b) {
-    let #(indices_a, _) = pair_a
-    let #(indices_b, _) = pair_b
-    let #(_, col_index_a) = indices_a
-    let #(_, col_index_b) = indices_b
+pub fn get_row(grid: Grid(a), index: Int) -> Result(List(a), Nil) {
+  let #(_, width) = size(grid)
 
-    int.compare(col_index_a, col_index_b)
+  list.range(0, width - 1)
+  |> list.map(fn (col_index) {
+    dict.get(grid, #(index, col_index))
   })
-  |> list.map(fn (pair) {
-    let #(_, value) = pair
-    value
-  })
+  |> result.all
 }
 
 ///
 /// Gets the column of a given index as a list
-pub fn get_column(grid: Grid(a), index: Int) -> List(a) {
-  grid
-  |> dict.filter(fn (key, _) {
-    let #(_, column_index) = key
-    column_index == index
-  })
-  |> dict.to_list
-  |> list.sort(fn (pair_a, pair_b) {
-    let #(indices_a, _) = pair_a
-    let #(indices_b, _) = pair_b
-    let #(row_index_a, _) = indices_a
-    let #(row_index_b, _) = indices_b
+pub fn get_column(grid: Grid(a), index: Int) -> Result(List(a), Nil) {
+  let #(height, _) = size(grid)
 
-    int.compare(row_index_a, row_index_b)
+  list.range(0, height - 1)
+  |> list.map(fn (row_index) {
+    dict.get(grid, #(row_index, index))
   })
-  |> list.map(fn (pair) {
-    let #(_, value) = pair
-    value
-  })
+  |> result.all
 }
 
 pub fn debug_column() {
@@ -98,7 +77,7 @@ pub fn debug_column() {
     [1,2,3],
     [4,5,6],
     [7,8,9]
-  ] |> from_lists |> size |> io.debug
+  ] |> from_lists |> get_column(1) |> result.unwrap([]) |> io.debug
 }
 
 pub fn main() {
