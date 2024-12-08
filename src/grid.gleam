@@ -5,6 +5,7 @@ import gleam/dict
 import gleam/io
 
 pub type Grid(a) = dict.Dict(#(Int, Int), a)
+pub type Element(a) = #(#(Int, Int), a)
 
 ///
 /// Takes a m⨯n list of lists and returns a Grid - which is a dictionary with the keys being the
@@ -70,6 +71,18 @@ pub fn get_column(grid: Grid(a), index: Int) -> Result(List(a), Nil) {
     dict.get(grid, #(row_index, index))
   })
   |> result.all
+}
+
+///
+/// Transforms a grid to a list of lists (row-wise)
+pub fn to_lists(grid: Grid(a)) -> List(List(a)) {
+  let #(height, _) = size(grid)
+
+  list.range(0, height - 1)
+  |> list.map(fn (row_index) {
+    let assert Ok(row) = get_row(grid, row_index)
+    row
+  })
 }
 
 pub fn debug_column() {

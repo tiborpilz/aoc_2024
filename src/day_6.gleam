@@ -11,6 +11,8 @@
 // - If it is pointing at "#", rotate it by 90 degrees
 // Then, call the function again with the updated grid.
 
+import grid
+import gleam/dict
 import gleam/string
 import gleam/io
 import gleam/function
@@ -24,12 +26,6 @@ pub fn has_guard(grid: List(List(String))) -> Bool {
     grid
     |> list.flatten()
     |> list.contains(guard)
-  })
-}
-
-pub fn get_guard_direction(grid: List(List(String))) -> Result(String, Nil) {
-  grid |> list.flatten |> list.find(fn (char) {
-    char == "^" || char == ">" || char == "v" || char == "<"
   })
 }
 
@@ -128,9 +124,10 @@ pub fn will_loop(row: List(String)) -> Bool {
   }
 }
 
-pub fn pretty_print(grid: List(List(String))) {
+pub fn pretty_print(grid: grid.Grid(String)) {
   io.debug("---------------------------------")
   grid
+  |> grid.to_lists
   |> list.map(fn (row) { io.debug(utils.join(row)) })
   io.debug("---------------------------------")
 
@@ -173,54 +170,158 @@ pub fn row_contains_guard(row: List(String)) -> Bool {
   list.any(row, fn (char) { list.contains(["^", "v", ">", "<"], char) })
 }
 
-pub fn update_grid(grid: List(List(String)), guard: String) -> List(List(String)) {
-  // When the guard is not pointing in a horizontal direction, we need to transpose the grid first (and then transpose it back at the end)
-  // (Since transposing a matrix twice is idemptotent, we can just use the same process function as its own inverse)
-  let normalize_grid = case is_vertical_guard(guard) {
-    True -> list.transpose
-    False -> function.identity
-  }
+pub fn check_grid_for_loop(grid: grid.Grid(String), guard: grid.Element(String)) -> Bool {
+  let assert Ok(target) = get_next_guard_pos(guard)
 
-  // When the guard is pointing "forwards" (right or down), it's easier to just reverse the row before checking for the guard to prevent oob
-  let normalize_row = case is_forward_guard(guard) {
-    True -> function.identity
-    False -> list.reverse
+  case dict.get(grid, target), guard {
+    Ok("k"), #(_, "^") -> True
+    Ok("l"), #(_, ">") -> True
+    Ok("j"), #(_, "v") -> True
+    Ok("h"), #(_, "<") -> True
+    _, _ -> False
   }
+}
 
-  grid
-  |> normalize_grid
-  |> list.map(fn (row) {
-      row |> normalize_row |> update_normalized_row |> normalize_row
+// For a given grid, return a list of grids, each with a single "." replaced by a "#"
+pub fn get_grid_permutations(grid: grid.Grid(String)) -> List(grid.Grid(String)) {
+  let #(height, width) = grid.size(grid)
+
+
+  list.range(0, height - 1)
+  |> list.map(fn (y) {
+    list.range(0, width - 1)
+    |> list.map(fn (x) {
+      io.debug(#(y, x))
+      case dict.get(grid, #(y, x)) {
+        Ok(".") -> dict.insert(grid, #(y, x), "#")
+        _ -> grid
+      }
     })
-  |> normalize_grid
+  })
+  |> list.flatten
+  // let assert [first_row, .._] = grid
+  // let row_length = list.length(first_row)
+
+  // let flat_grid = list.flatten(grid)
+
+  // list.range(0, list.length(flat_grid))
+  // |> list.map(fn (i) {
+  //   list.index_map(flat_grid, fn(char, j) {
+  //     case j {
+  //       x if x == i -> case char {
+  //         "." -> "#"
+  //         x -> x
+  //       }
+  //       _ -> char
+  //     }
+  //   })
+  //   |> list.sized_chunk(row_length)
+  // })
 }
 
-pub fn check_grid_for_loop(grid: List(List(String)), guard: String) -> Bool {
-  let normalize_grid = case is_vertical_guard(guard) {
-    True -> list.transpose
-    False -> function.identity
-  }
+// pub fn part_2() {
+//   "./data/day_6.txt"
+//   |> utils.read_lines()
+//   |> list.map(fn (row) { string.split(row, "") })
+//   |> get_grid_permutations
+//   |> list.filter(fn (grid) {
+//     io.debug(list.length(_))
 
-  // When the guard is pointing "forwards" (right or down), it's easier to just reverse the row before checking for the guard to prevent oob
-  let normalize_row = case is_forward_guard(guard) {
-    True -> function.identity
-    False -> list.reverse
-  }
+//     case solve_grid_loops(grid) {
+//       Ok(_) -> True
+//       Error(_) -> False
+//     }
+//     |> io.debug
+//   })
+//   |> list.length
+//   |> io.debug
+// }
 
-  grid
-  |> normalize_grid
-  |> list.any(fn (row) { row |> normalize_row |> will_loop })
+pub fn find_guard(grid: grid.Grid(String)) -> Result(grid.Element(String), Nil) {
+  let candidates = grid
+  |> dict.filter(fn (_, char) {
+    char == "^" || char == ">" || char == "v" || char == "<"
+  })
+  |> dict.to_list()
+
+  case candidates {
+    [] -> Error(Nil)
+    [guard] -> Ok(guard)
+    _ -> Error(Nil) // multiple guards D:
+  }
 }
 
-pub fn solve_grid(grid: List(List(String))) -> List(List(String)) {
-  case get_guard_direction(grid) {
+pub fn get_next_guard_pos(guard: grid.Element(String)) -> Result(#(Int, Int), Nil) {
+  let #(#(y, x), guard_char) = guard
+  case guard_char {
+    "^" -> Ok(#(y - 1, x))
+    ">" -> Ok(#(y, x + 1))
+    "v" -> Ok(#(y + 1, x))
+    "<" -> Ok(#(y, x - 1))
+    _ -> Error(Nil)
+  }
+}
+
+fn rotate_guard_char(char: String) -> String {
+  case char {
+    "^" -> ">"
+    ">" -> "v"
+    "v" -> "<"
+    "<" -> "^"
+    x -> x // shouldn't happen
+  }
+}
+
+fn rotate_guard(grid: grid.Grid(String), guard: grid.Element(String)) {
+  let #(coords, prev_char) = guard
+  let next_char = rotate_guard_char(prev_char)
+
+  grid.update_if_exists(grid, coords, next_char)
+}
+
+fn get_guard_trail(guard_char: String) -> String {
+  case guard_char {
+    "^" -> "k"
+    ">" -> "l"
+    "v" -> "j"
+    "<" -> "h"
+    x -> x // shouldn't happen
+  }
+}
+
+fn move_guard(
+  grid: grid.Grid(String),
+  guard: grid.Element(String),
+  target: #(Int, Int)
+) -> grid.Grid(String) {
+  let #(guard_coords, guard_char) = guard
+  let trail = get_guard_trail(guard_char)
+
+  grid |> grid.update_if_exists(guard_coords, trail) |> grid.update_if_exists(target, guard_char)
+}
+
+pub fn update_grid(grid: grid.Grid(String), guard: grid.Element(String)) -> grid.Grid(String) {
+  let assert Ok(target) = get_next_guard_pos(guard)
+  let should_rotate = case dict.get(grid, target) {
+    Ok("#") -> True
+    _ -> False
+  }
+
+  case should_rotate {
+    True -> rotate_guard(grid, guard)
+    False -> move_guard(grid, guard, target)
+  }
+}
+
+pub fn solve_grid(grid: grid.Grid(String)) -> grid.Grid(String) {
+  case find_guard(grid) {
     Error(_) -> grid // no guard
     Ok(guard) -> solve_grid(update_grid(grid, guard))
   }
 }
 
-pub fn solve_grid_loops(grid: List(List(String))) -> Result(List(List(String)), Nil) {
-  case get_guard_direction(grid) {
+pub fn solve_grid_loops(grid: grid.Grid(String)) -> Result(grid.Grid(String), Nil) {
+  case find_guard(grid) {
     Error(_) -> Error(Nil)
     Ok(guard) -> case check_grid_for_loop(grid, guard) {
       True -> Ok(grid)
@@ -229,70 +330,39 @@ pub fn solve_grid_loops(grid: List(List(String))) -> Result(List(List(String)), 
   }
 }
 
-// For a given grid, return a list of grids, each with a single "." replaced by a "#"
-pub fn get_grid_permutations(grid: List(List(String))) -> List(List(List(String))) {
-  let assert [first_row, .._] = grid
-  let row_length = list.length(first_row)
 
-  let flat_grid = list.flatten(grid)
-
-  list.range(0, list.length(flat_grid))
-  |> list.map(fn (i) {
-    list.index_map(flat_grid, fn(char, j) {
-      case j {
-        x if x == i -> case char {
-          "." -> "#"
-          x -> x
-        }
-        _ -> char
-      }
-    })
-    |> list.sized_chunk(row_length)
+pub fn part_2() {
+  "./data/day_6.txt"
+  |> utils.read_lines()
+  |> list.map(fn (row) { string.split(row, "") })
+  |> grid.from_lists
+  |> get_grid_permutations
+  |> list.map(fn (grid) {
+    io.debug("start")
+    // case solve_grid_loops(grid) {
+    //   Ok(_) -> True
+    //   Error(_) -> False
+    // }
+    solve_grid(grid)
+    |> io.debug
   })
+  |> list.length
 }
 
 pub fn part_1() {
   "./data/day_6.txt"
   |> utils.read_lines()
   |> list.map(fn (row) { string.split(row, "") })
+  |> grid.from_lists
   |> solve_grid
   |> pretty_print
+  |> grid.to_lists
   |> list.flatten
   |> list.filter(fn (char) { char == "h" || char == "j" || char == "k" || char == "l" })
   |> list.length
   |> io.debug
 }
 
-pub fn part_2() {
-  "./data/day_6.txt"
-  |> utils.read_lines()
-  |> list.map(fn (row) { string.split(row, "") })
-  |> get_grid_permutations
-  |> list.filter(fn (grid) {
-    io.debug(list.length(_))
-
-    case solve_grid_loops(grid) {
-      Ok(_) -> True
-      Error(_) -> False
-    }
-    |> io.debug
-  })
-  |> list.length
-  |> io.debug
-}
-
-pub fn benchmark() {
-  let data = "./data/day_6.txt"
-  |> utils.read_lines()
-  |> list.map(fn (row) { string.split(row, "") })
-
-  list.range(0, 1000)
-  |> list.map(fn (_) {
-    data |> list.flatten |> list.find(fn (char) { char == "^" })
-  })
-}
-
-
 pub fn main() {
-  part_2()
+  part_1()
 }
