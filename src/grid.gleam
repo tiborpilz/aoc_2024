@@ -1,5 +1,4 @@
 import gleam/result
-import gleam/int
 import gleam/list
 import gleam/dict
 import gleam/io
@@ -28,6 +27,13 @@ pub fn update_if_exists(grid: Grid(a), indices: #(Int,Int), value: a) {
     False -> grid
     True -> grid |> dict.insert(indices, value)
   }
+}
+
+///
+/// Get value specified by indices
+///
+pub fn get(grid: Grid(a), indices: #(Int,Int)) -> Result(a, Nil) {
+  dict.get(grid, indices)
 }
 
 ///
