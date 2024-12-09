@@ -182,60 +182,31 @@ pub fn check_grid_for_loop(grid: grid.Grid(String), guard: grid.Element(String))
   }
 }
 
+// Only generate a permutation if the obstacle's target coord is in the previously solved path
+fn should_create_permutation(grid: grid.Grid(String), coords: #(Int, Int)) -> Bool {
+  case grid.get(grid, coords) {
+    Ok(char) -> list.contains(["h", "j", "k", "l"], char)
+    _ -> False
+  }
+}
+
 // For a given grid, return a list of grids, each with a single "." replaced by a "#"
-pub fn get_grid_permutations(grid: grid.Grid(String)) -> List(grid.Grid(String)) {
+pub fn get_grid_permutations(grid: grid.Grid(String), original_grid: grid.Grid(String)) -> List(grid.Grid(String)) {
   let #(height, width) = grid.size(grid)
 
 
   list.range(0, height - 1)
   |> list.map(fn (y) {
     list.range(0, width - 1)
+    |> list.filter(fn (x) {
+      should_create_permutation(grid, #(y, x))
+    })
     |> list.map(fn (x) {
-      io.debug(#(y, x))
-      case dict.get(grid, #(y, x)) {
-        Ok(".") -> dict.insert(grid, #(y, x), "#")
-        _ -> grid
-      }
+      dict.insert(original_grid, #(y, x), "#")
     })
   })
   |> list.flatten
-  // let assert [first_row, .._] = grid
-  // let row_length = list.length(first_row)
-
-  // let flat_grid = list.flatten(grid)
-
-  // list.range(0, list.length(flat_grid))
-  // |> list.map(fn (i) {
-  //   list.index_map(flat_grid, fn(char, j) {
-  //     case j {
-  //       x if x == i -> case char {
-  //         "." -> "#"
-  //         x -> x
-  //       }
-  //       _ -> char
-  //     }
-  //   })
-  //   |> list.sized_chunk(row_length)
-  // })
 }
-
-// pub fn part_2() {
-//   "./data/day_6.txt"
-//   |> utils.read_lines()
-//   |> list.map(fn (row) { string.split(row, "") })
-//   |> get_grid_permutations
-//   |> list.filter(fn (grid) {
-//     io.debug(list.length(_))
-
-//     case solve_grid_loops(grid) {
-//       Ok(_) -> True
-//       Error(_) -> False
-//     }
-//     |> io.debug
-//   })
-//   |> list.length
-//   |> io.debug
-// }
 
 pub fn find_guard(grid: grid.Grid(String)) -> Result(grid.Element(String), Nil) {
   let candidates = grid
@@ -320,33 +291,39 @@ pub fn solve_grid(grid: grid.Grid(String)) -> grid.Grid(String) {
   }
 }
 
-pub fn solve_grid_loops(grid: grid.Grid(String)) -> Result(grid.Grid(String), Nil) {
-  case find_guard(grid) {
-    Error(_) -> Error(Nil)
-    Ok(guard) -> case check_grid_for_loop(grid, guard) {
-      True -> Ok(grid)
-      False -> solve_grid_loops(update_grid(grid, guard))
+pub fn solve_grid_loops(grid: grid.Grid(String), previously_seen_grids: List(grid.Grid(String))) -> Result(grid.Grid(String), Nil) {
+  case list.contains(previously_seen_grids, grid) {
+    True -> Ok(grid)
+    False -> case find_guard(grid) {
+      Error(_) -> Error(Nil)
+      Ok(guard) -> solve_grid_loops(update_grid(grid, guard), [grid, ..previously_seen_grids])
     }
   }
 }
 
-
 pub fn part_2() {
-  "./data/day_6.txt"
+  let original_grid = "./data/day_6.txt"
   |> utils.read_lines()
   |> list.map(fn (row) { string.split(row, "") })
   |> grid.from_lists
-  |> get_grid_permutations
-  |> list.map(fn (grid) {
-    io.debug("start")
-    // case solve_grid_loops(grid) {
-    //   Ok(_) -> True
-    //   Error(_) -> False
-    // }
-    solve_grid(grid)
+
+  original_grid
+  |> solve_grid
+  |> get_grid_permutations(original_grid)
+  |> list.index_map(fn (grid, index) {
+    #(grid, index)
+  })
+  |> list.filter(fn (pair) {
+    let #(grid, index) = pair
+    io.debug(index)
+    case solve_grid_loops(grid, []) {
+      Ok(_) -> True
+      Error(_) -> False
+    }
     |> io.debug
   })
   |> list.length
+  |> io.debug
 }
 
 pub fn part_1() {
@@ -364,5 +341,5 @@ pub fn part_1() {
 }
 
 pub fn main() {
-  part_1()
+  part_2()
 }
