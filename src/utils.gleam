@@ -1,6 +1,6 @@
+import gleam/int
 import gleam/io
 import gleam/list
-import gleam/int
 import gleam/result
 import gleam/string
 import simplifile
@@ -50,7 +50,7 @@ pub fn print_with_part(result: String, part: String) {
 }
 
 pub fn format_sum(l: List(Int), prefix: String) {
-  l |> sum |> to_string |> fn (s) { prefix <> s }
+  l |> sum |> to_string |> fn(s) { prefix <> s }
 }
 
 pub fn to_string(n: Int) {
@@ -59,7 +59,7 @@ pub fn to_string(n: Int) {
 
 pub fn join(chars: List(String)) {
   chars
-  |> list.fold("", fn (acc, char) { acc <> char })
+  |> list.fold("", fn(acc, char) { acc <> char })
 }
 
 /// Gets the entry of a 1D-List at a given index

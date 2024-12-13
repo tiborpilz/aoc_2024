@@ -22,23 +22,20 @@
 //// - Three times the linear factor of A + the linear factor of B
 //// The linear combination with the lowest score is our optimal path.
 ////
-
-
 //// k * ax + l * bx = x
 //// k * ay + l * by = y
 //// ( ax bx ) times (k) = (x)
 //// ( ay by )       (l)   (y)
-
 //// x * by -y * bx = k * ax*by - ay*by)
 //// y * ax - x * ay = l * (ax*by - ay*bx)
 
 import gleam/int
-import utils
+import gleam/io
+import gleam/list
+import gleam/option
 import gleam/regexp
 import gleam/result
-import gleam/list
-import gleam/io
-import gleam/option
+import utils
 
 /// X,Y Position
 pub type Position {
@@ -67,29 +64,34 @@ fn add_to_position(position: Position, value: Int) -> Position {
 
 /// Parse a line containing button information
 fn parse_button(line: String) -> Result(Position, Nil) {
-  let assert Ok(button_regex) = regexp.from_string("Button (A|B): X\\+([0-9]+), Y\\+([0-9]+)")
+  let assert Ok(button_regex) =
+    regexp.from_string("Button (A|B): X\\+([0-9]+), Y\\+([0-9]+)")
 
   case regexp.scan(button_regex, line) {
-    [match] -> case match.submatches {
-      [_, option.Some(raw_x), option.Some(raw_y)] -> strings_to_position(raw_x, raw_y)
-      _ -> Error(Nil)
-    }
+    [match] ->
+      case match.submatches {
+        [_, option.Some(raw_x), option.Some(raw_y)] ->
+          strings_to_position(raw_x, raw_y)
+        _ -> Error(Nil)
+      }
     _ -> Error(Nil)
   }
 }
 
 /// Parse a line containing Prize information
 fn parse_prize(line: String) -> Result(Position, Nil) {
-  let assert Ok(prize_regex) = regexp.from_string("Prize: X=([0-9]+), Y=([0-9]+)")
+  let assert Ok(prize_regex) =
+    regexp.from_string("Prize: X=([0-9]+), Y=([0-9]+)")
 
   case regexp.scan(prize_regex, line) {
-    [match] -> case match.submatches {
-      [option.Some(raw_x), option.Some(raw_y)] -> result.try(
-        strings_to_position(raw_x, raw_y),
-        fn (pos) { Ok(add_to_position(pos, 10000000000000)) }
-      )
-      _ -> Error(Nil)
-    }
+    [match] ->
+      case match.submatches {
+        [option.Some(raw_x), option.Some(raw_y)] ->
+          result.try(strings_to_position(raw_x, raw_y), fn(pos) {
+            Ok(add_to_position(pos, 10_000_000_000_000))
+          })
+        _ -> Error(Nil)
+      }
     _ -> Error(Nil)
   }
 }
@@ -97,18 +99,23 @@ fn parse_prize(line: String) -> Result(Position, Nil) {
 /// Parse a block containing three lines ('Button A:', 'Button B:' & Prize:)
 fn parse_block(block: List(String)) -> Result(ClawMachine, Nil) {
   case block {
-    [line_a, line_b, line_prize] -> case parse_button(line_a), parse_button(line_b), parse_prize(line_prize) {
-      Ok(a), Ok(b), Ok(prize) -> Ok(ClawMachine(a, b, prize))
-      _, _, _ -> Error(Nil)
-    }
+    [line_a, line_b, line_prize] ->
+      case parse_button(line_a), parse_button(line_b), parse_prize(line_prize) {
+        Ok(a), Ok(b), Ok(prize) -> Ok(ClawMachine(a, b, prize))
+        _, _, _ -> Error(Nil)
+      }
     _ -> Error(Nil)
   }
 }
 
 /// Parse lines of text into a list of ClawMachines
-fn parse_input(lines: List(String), result: List(Result(ClawMachine, Nil))) -> List(Result(ClawMachine, Nil)) {
+fn parse_input(
+  lines: List(String),
+  result: List(Result(ClawMachine, Nil)),
+) -> List(Result(ClawMachine, Nil)) {
   case lines {
-    [a, b, prize, "", ..rest] -> parse_input(rest, [parse_block([a, b, prize]), ..result])
+    [a, b, prize, "", ..rest] ->
+      parse_input(rest, [parse_block([a, b, prize]), ..result])
     [a, b, prize] -> [parse_block([a, b, prize]), ..result]
     _ -> result
   }
@@ -120,8 +127,10 @@ fn parse_input(lines: List(String), result: List(Result(ClawMachine, Nil))) -> L
 pub fn solve_machine(machine: ClawMachine) {
   let ClawMachine(a, b, p) = machine
 
-  let a_count = {{ b.y * p.x } - { b.x * p.y }} / {{ a.x * b.y } - { a.y * b.x }}
-  let b_count = {{ a.y * p.x } - { a.x * p.y }} / {{ a.y * b.x } - { a.x * b.y }}
+  let a_count =
+    { { b.y * p.x } - { b.x * p.y } } / { { a.x * b.y } - { a.y * b.x } }
+  let b_count =
+    { { a.y * p.x } - { a.x * p.y } } / { { a.y * b.x } - { a.x * b.y } }
 
   let x_matches = { a_count * a.x } + { b_count * b.x } == p.x
   let y_matches = { a_count * a.y } + { b_count * b.y } == p.y
@@ -136,7 +145,7 @@ pub fn main() {
   "./data/day_13.txt"
   |> utils.read_lines
   |> parse_input([])
-  |> list.map(fn (machine_result) {
+  |> list.map(fn(machine_result) {
     let assert Ok(machine) = machine_result
     solve_machine(machine)
   })

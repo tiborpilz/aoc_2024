@@ -24,31 +24,31 @@ fn parse_rule(rule: String) {
 fn parse_pages(page: String) {
   page
   |> string.split(",")
-  |> list.map(fn (x) {
+  |> list.map(fn(x) {
     let assert Ok(x_parsed) = int.parse(x)
     x_parsed
   })
 }
 
 fn parse_data(data: List(String)) {
-  let rules = data
-  |> list.take_while(fn (row) {
-      row != ""
-    })
-  |> list.map(parse_rule)
+  let rules =
+    data
+    |> list.take_while(fn(row) { row != "" })
+    |> list.map(parse_rule)
 
   // pages start after rules
   let pages_index = list.length(rules)
   let #(_, pages_raw) = list.split(data, pages_index + 1)
-  let pages = pages_raw
-  |> list.map(parse_pages)
+  let pages =
+    pages_raw
+    |> list.map(parse_pages)
 
   #(pages, rules)
 }
 
 fn rest_satisfies_all_rules(a: Int, rest: List(Int), rules: List(#(Int, Int))) {
   rest
-  |> list.any(fn (b) { list.contains(rules, #(a, b)) })
+  |> list.any(fn(b) { list.contains(rules, #(a, b)) })
   |> bool.negate
 }
 
@@ -59,29 +59,32 @@ fn check_page(page: List(Int), rules: List(#(Int, Int))) {
   case page {
     [] -> True
     [_] -> True
-    [a, ..rest] -> rest_satisfies_all_rules(a, rest, rules) && check_page(rest, rules)
+    [a, ..rest] ->
+      rest_satisfies_all_rules(a, rest, rules) && check_page(rest, rules)
   }
 }
 
 fn get_valid_pages(data: List(String)) {
   let #(pages, rules) = parse_data(data)
 
-  pages |> list.filter(fn (page) { check_page(page, rules) })
+  pages |> list.filter(fn(page) { check_page(page, rules) })
 }
 
 pub fn sum_middle_values(pages: List(List(Int))) {
   pages
-  |> list.map(fn (page) {
-      let assert Ok(middle_index) = page
+  |> list.map(fn(page) {
+    let assert Ok(middle_index) =
+      page
       |> list.length
       |> int.floor_divide(2)
 
-      let assert Ok(middle_entry) = page
+    let assert Ok(middle_entry) =
+      page
       |> list.take(middle_index + 1)
       |> list.last()
 
-      middle_entry
-    })
+    middle_entry
+  })
   |> utils.sum
 }
 
@@ -89,8 +92,9 @@ pub fn sum_middle_values(pages: List(List(Int))) {
 fn swap(input: List(Int), a: Int, b: Int) {
   case list.contains(input, a) && list.contains(input, b) {
     False -> input
-    True -> input
-      |> list.map(fn (x) {
+    True ->
+      input
+      |> list.map(fn(x) {
         case x {
           n if n == a -> b
           n if n == b -> a
@@ -119,12 +123,11 @@ pub fn part_1() {
 pub fn sort_until_valid(page: List(Int), rules: List(#(Int, Int))) {
   case check_page(page, rules) {
     True -> page
-    False -> rules
+    False ->
+      rules
       |> list.shuffle
-      |> list.filter(fn (rule) {
-        check_page(page, [rule]) |> bool.negate
-      })
-      |> list.fold(page, fn (page, rule) {
+      |> list.filter(fn(rule) { check_page(page, [rule]) |> bool.negate })
+      |> list.fold(page, fn(page, rule) {
         let #(a, b) = rule
         swap(page, a, b)
       })
@@ -138,12 +141,8 @@ pub fn part_2() {
   let #(pages, rules) = parse_data(data)
 
   pages
-  |> list.filter(fn (page) {
-    check_page(page, rules) |> bool.negate
-  })
-  |> list.map(fn (page) {
-    sort_until_valid(page, rules)
-  })
+  |> list.filter(fn(page) { check_page(page, rules) |> bool.negate })
+  |> list.map(fn(page) { sort_until_valid(page, rules) })
   |> sum_middle_values
   |> io.debug
 }

@@ -1,14 +1,14 @@
-import utils
-import gleam/int
-import gleam/list
-import gleam/io
-
 //// Part 1 is more or less straightforward. The interesting thing is the pairwise comparison
 //// with a given comparator, making `ascending(l)` and `descending(l)` possible without
 //// too much code duplication.
 //// The more elegant approach could've been to infer whether the list is ascending or descending
 //// by comparing the first and second elements, and then using that to determine the comparator.
 //// This way, we're checking the list twice, but hey, what's a factor of two between friends?
+
+import gleam/int
+import gleam/io
+import gleam/list
+import utils
 
 /// Returns true if difference between parameters is within safe range (1 - 3)
 fn safe_dist(a: Int, b: Int) {
@@ -24,7 +24,10 @@ fn compare_pairwise(l: List(Int), comparator: fn(Int, Int) -> Bool) {
   case l {
     [] -> True
     [_] -> True
-    [x, y, ..rest] -> comparator(x, y) && safe_dist(x, y) && compare_pairwise([y, ..rest], comparator)
+    [x, y, ..rest] ->
+      comparator(x, y)
+      && safe_dist(x, y)
+      && compare_pairwise([y, ..rest], comparator)
   }
 }
 
@@ -52,7 +55,6 @@ pub fn part_1() {
   |> utils.format_int
 }
 
-
 // This one is a bit more tricky. The techniques are mostly the same as the one used in part 1, save
 // for allowing one constraint violation per row. For that, this solution uses brute force to generate
 // all possible distinct sublists of same ordering and length n-1, checks all of them for monotonicity
@@ -68,24 +70,25 @@ fn get_sublists(l: List(Int)) {
   |> list.range(0)
   |> list.map(fn(i) {
     // Remove ith element from list
-    let left = l
-    |> list.reverse
-    |> list.drop(list.length(l) - i)
-    |> list.reverse
-    let right = l
-    |> list.drop(i + 1)
+    let left =
+      l
+      |> list.reverse
+      |> list.drop(list.length(l) - i)
+      |> list.reverse
+    let right =
+      l
+      |> list.drop(i + 1)
     list.flatten([left, right])
   })
-  |> list.drop(1) // implementation artifact, first sublist is the original list
+  |> list.drop(1)
+  // implementation artifact, first sublist is the original list
 }
 
 pub fn part_2() {
   "./data/day_2.txt"
   |> utils.read_lines
   |> list.map(utils.parse_row)
-  |> list.filter(fn(l) {
-      l |> get_sublists |> list.any(monotonic)
-    })
+  |> list.filter(fn(l) { l |> get_sublists |> list.any(monotonic) })
   |> list.length
   |> utils.format_int
 }

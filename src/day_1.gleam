@@ -1,9 +1,9 @@
-import utils.{format_sum, read_lines}
 import gleam/int
 import gleam/io
 import gleam/list
 import gleam/result
 import gleam/string
+import utils.{format_sum, read_lines}
 
 fn parse_entry(entry: String) {
   entry
@@ -32,25 +32,27 @@ pub fn get_data() {
 
 pub fn part_1() {
   let #(left, right) = get_data()
-  let distances = list.zip(list.sort(left, int.compare), list.sort(right, int.compare))
-    |> list.map(fn (tuple) {
-        let #(a, b) = tuple
-        int.absolute_value(a - b)
-      })
+  let distances =
+    list.zip(list.sort(left, int.compare), list.sort(right, int.compare))
+    |> list.map(fn(tuple) {
+      let #(a, b) = tuple
+      int.absolute_value(a - b)
+    })
 
   io.println(format_sum(distances, "Distance: "))
 }
 
 pub fn part_2() {
   let #(left, right) = get_data()
-  let similarity = left
-    |> list.map(fn (n) {
-        right
-        |> list.filter(fn (m) { n == m })
-        |> list.length
-        |> int.multiply(n)
-       })
-    |> list.filter(fn (n) { n > 0 })
+  let similarity =
+    left
+    |> list.map(fn(n) {
+      right
+      |> list.filter(fn(m) { n == m })
+      |> list.length
+      |> int.multiply(n)
+    })
+    |> list.filter(fn(n) { n > 0 })
 
   io.println(format_sum(similarity, "Similarity: "))
 }

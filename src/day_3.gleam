@@ -1,7 +1,7 @@
-import gleam/option.{Some}
-import gleam/regex.{from_string,scan,replace,Match}
 import gleam/int
 import gleam/list
+import gleam/option
+import gleam/regexp
 import utils
 
 pub fn load_rows() {
@@ -14,12 +14,13 @@ pub fn load_rows() {
 
 /// Parse a string and return the sum of the products defined by `mul(a, b)` expressions
 pub fn get_mult_sum(s: String) {
-  let assert Ok(mul_statements) = from_string("mul\\(([0-9]+),([0-9]+)\\)")
+  let assert Ok(mul_statements) =
+    regexp.from_string("mul\\(([0-9]+),([0-9]+)\\)")
 
   s
-  |> scan(mul_statements, _)
+  |> regexp.scan(mul_statements, _)
   |> list.map(fn(match) {
-    let assert Match(_, [Some(a), Some(b)]) = match
+    let assert regexp.Match(_, [option.Some(a), option.Some(b)]) = match
     let assert Ok(a_parsed) = a |> int.base_parse(10)
     let assert Ok(b_parsed) = b |> int.base_parse(10)
     a_parsed * b_parsed
@@ -38,13 +39,14 @@ pub fn part_1() {
 // This leaves us with the same problem as part 1, which means we can reuse the same function.
 
 /// Remove everything between a `don't()` and a `do()`, spanning multiple lines
-pub fn remove_dont_blocks(s: String) {
-  let assert Ok(dont_blocks) = from_string("don't\\(\\)(.+?)(do\\(\\)|$)")
-  let assert Ok(newline) = from_string("\n")
+pub fn remove_dont_blocks(input_string: String) {
+  let assert Ok(dont_blocks) =
+    regexp.from_string("don't\\(\\)(.+?)(do\\(\\)|$)")
+  let assert Ok(newline) = regexp.from_string("\n")
 
-  s
-  |> replace(newline, _, "")
-  |> replace(dont_blocks, _, "")
+  input_string
+  |> regexp.replace(newline, _, "")
+  |> regexp.replace(dont_blocks, _, "")
 }
 
 pub fn part_2() {
