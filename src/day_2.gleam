@@ -3,12 +3,12 @@ import gleam/int
 import gleam/list
 import gleam/io
 
-// Part 1 is more or less straightforward. The interesting thing is the pairwise comparison
-// with a given comparator, making `ascending(l)` and `descending(l)` possible without
-// too much code duplication.
-// The more elegant approach could've been to infer whether the list is ascending or descending
-// by comparing the first and second elements, and then using that to determine the comparator.
-// This way, we're checking the list twice, but hey, what's a factor of two between friends?
+//// Part 1 is more or less straightforward. The interesting thing is the pairwise comparison
+//// with a given comparator, making `ascending(l)` and `descending(l)` possible without
+//// too much code duplication.
+//// The more elegant approach could've been to infer whether the list is ascending or descending
+//// by comparing the first and second elements, and then using that to determine the comparator.
+//// This way, we're checking the list twice, but hey, what's a factor of two between friends?
 
 /// Returns true if difference between parameters is within safe range (1 - 3)
 fn safe_dist(a: Int, b: Int) {
@@ -28,14 +28,17 @@ fn compare_pairwise(l: List(Int), comparator: fn(Int, Int) -> Bool) {
   }
 }
 
+/// Returns true if all successive pairs of elements in list are ascending
 fn ascending(l: List(Int)) {
   compare_pairwise(l, fn(x, y) { x < y })
 }
 
+/// Returns true if all successive pairs of elements in list are descending
 fn descending(l: List(Int)) {
   compare_pairwise(l, fn(x, y) { x > y })
 }
 
+/// Returns true if list is either ascending or descending
 fn monotonic(l: List(Int)) {
   ascending(l) || descending(l)
 }
