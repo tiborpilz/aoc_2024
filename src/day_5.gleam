@@ -1,10 +1,10 @@
-// Create ordering rule from list of strings "a|b" where a needs to come before b
-//
-// Since numbers don't have to be in an ordering rule, use the negation, so "a|b"
-// results in a rule #(b, a), which, if violated, fails the check.
+//// Create ordering rule from list of strings "a|b" where a needs to come before b
+////
+//// Since numbers don't have to be in an ordering rule, use the negation, so "a|b"
+//// results in a rule #(b, a), which, if violated, fails the check.
 
-// To check for a list [a,b,c,d] check the ordering for
-// #(a, [b,c,d]), #(b, [c,d]) and #(c, [d])
+//// To check for a list [a,b,c,d] check the ordering for
+//// #(a, [b,c,d]), #(b, [c,d]) and #(c, [d])
 
 import gleam/bool
 import gleam/int
@@ -13,15 +13,17 @@ import gleam/list
 import gleam/string
 import utils
 
-// Reverse the numbers because we want to check for any that are _not_ satisfying the rule
-fn parse_rule(rule: String) {
+/// Given a rule line, parse a rule in format of "a|b" to a tuple of #(b, a).
+/// This is because we use the rule to check for validations, meaning we need to reverse the order.
+fn parse_rule(rule: String) -> #(Int, Int) {
   let assert [a, b] = string.split(rule, "|")
   let assert Ok(a_parsed) = int.parse(a)
   let assert Ok(b_parsed) = int.parse(b)
   #(b_parsed, a_parsed)
 }
 
-fn parse_pages(page: String) {
+/// Given a page, parse the page to a list of integers.
+fn parse_pages(page: String) -> List(Int) {
   page
   |> string.split(",")
   |> list.map(fn(x) {
@@ -30,6 +32,8 @@ fn parse_pages(page: String) {
   })
 }
 
+/// Given the initial data (already as lines) parse the data to a tuple of a list of
+/// pages and a list of rules.
 fn parse_data(data: List(String)) {
   let rules =
     data
@@ -46,15 +50,16 @@ fn parse_data(data: List(String)) {
   #(pages, rules)
 }
 
+/// Does the provided list of integers satisfy all rules pairwise?
 fn rest_satisfies_all_rules(a: Int, rest: List(Int), rules: List(#(Int, Int))) {
   rest
   |> list.any(fn(b) { list.contains(rules, #(a, b)) })
   |> bool.negate
 }
 
-// Empty and 1 element lists are always valid
-// For the others, check if the first element satisfies all rules with the rest of the list (pairwise)
-// and then check the rest of the list
+/// Empty and 1 element lists are always valid
+/// For the others, check if the first element satisfies all rules with the rest of the list (pairwise)
+/// and then check the rest of the list
 fn check_page(page: List(Int), rules: List(#(Int, Int))) {
   case page {
     [] -> True
@@ -64,6 +69,7 @@ fn check_page(page: List(Int), rules: List(#(Int, Int))) {
   }
 }
 
+/// Given a list of pages and rules, return the pages that satisfy all rules
 fn get_valid_pages(data: List(String)) {
   let #(pages, rules) = parse_data(data)
 
