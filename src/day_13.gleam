@@ -22,7 +22,15 @@
 //// - Three times the linear factor of A + the linear factor of B
 //// The linear combination with the lowest score is our optimal path.
 ////
-//// $\exp$
+
+
+//// k * ax + l * bx = x
+//// k * ay + l * by = y
+//// ( ax bx ) times (k) = (x)
+//// ( ay by )       (l)   (y)
+
+//// x * by -y * bx = k * ax*by - ay*by)
+//// y * ax - x * ay = l * (ax*by - ay*bx)
 
 import gleam/int
 import utils
@@ -53,8 +61,12 @@ fn strings_to_position(raw_x: String, raw_y: String) -> Result(Position, Nil) {
   Ok(Position(x, y))
 }
 
+fn add_to_position(position: Position, value: Int) -> Position {
+  Position(x: position.x + value, y: position.y + value)
+}
+
 /// Parse a line containing button information
-fn parse_button_line(line: String) -> Result(Position, Nil) {
+fn parse_button(line: String) -> Result(Position, Nil) {
   let assert Ok(button_regex) = regexp.from_string("Button (A|B): X\\+([0-9]+), Y\\+([0-9]+)")
 
   case regexp.scan(button_regex, line) {
@@ -66,13 +78,16 @@ fn parse_button_line(line: String) -> Result(Position, Nil) {
   }
 }
 
-// Parse a line containing Prize information
-fn parse_prize_line(line: String) -> Result(Position, Nil) {
+/// Parse a line containing Prize information
+fn parse_prize(line: String) -> Result(Position, Nil) {
   let assert Ok(prize_regex) = regexp.from_string("Prize: X=([0-9]+), Y=([0-9]+)")
 
   case regexp.scan(prize_regex, line) {
     [match] -> case match.submatches {
-      [option.Some(raw_x), option.Some(raw_y)] -> strings_to_position(raw_x, raw_y)
+      [option.Some(raw_x), option.Some(raw_y)] -> result.try(
+        strings_to_position(raw_x, raw_y),
+        fn (pos) { Ok(add_to_position(pos, 10000000000000)) }
+      )
       _ -> Error(Nil)
     }
     _ -> Error(Nil)
@@ -82,7 +97,7 @@ fn parse_prize_line(line: String) -> Result(Position, Nil) {
 /// Parse a block containing three lines ('Button A:', 'Button B:' & Prize:)
 fn parse_block(block: List(String)) -> Result(ClawMachine, Nil) {
   case block {
-    [line_a, line_b, line_prize] -> case parse_button_line(line_a), parse_button_line(line_b), parse_prize_line(line_prize) {
+    [line_a, line_b, line_prize] -> case parse_button(line_a), parse_button(line_b), parse_prize(line_prize) {
       Ok(a), Ok(b), Ok(prize) -> Ok(ClawMachine(a, b, prize))
       _, _, _ -> Error(Nil)
     }
@@ -99,47 +114,22 @@ fn parse_input(lines: List(String), result: List(Result(ClawMachine, Nil))) -> L
   }
 }
 
-/// Given a claw machine, return all button combinations that lead to the prize.
-/// Returns an empty list if no combinations win.
-fn get_possible_combinations(machine: ClawMachine) -> List(#(Int, Int)) {
-  let assert Ok(a_max_count_x) = int.floor_divide(machine.prize.x, machine.a.x)
-  let assert Ok(a_max_count_y) = int.floor_divide(machine.prize.y, machine.a.y)
+/// Solve the linear equation given by `a_count * (a.x, a.y) + b_count * (b.x, b.y) = (prize.x, prize.y)`
+/// After solving, double check whether the solutions fit or wheter there's a rounding error.
+/// Then, return the score of your solution as speficied. (`3 * a_count + b_count`)
+pub fn solve_machine(machine: ClawMachine) {
+  let ClawMachine(a, b, p) = machine
 
-  let assert Ok(b_max_count_x) = int.floor_divide(machine.prize.x, machine.b.x)
-  let assert Ok(b_max_count_y) = int.floor_divide(machine.prize.y, machine.b.y)
+  let a_count = {{ b.y * p.x } - { b.x * p.y }} / {{ a.x * b.y } - { a.y * b.x }}
+  let b_count = {{ a.y * p.x } - { a.x * p.y }} / {{ a.y * b.x } - { a.x * b.y }}
 
+  let x_matches = { a_count * a.x } + { b_count * b.x } == p.x
+  let y_matches = { a_count * a.y } + { b_count * b.y } == p.y
 
-  let max_count_a = int.min(a_max_count_x, a_max_count_y)
-  let max_count_b = int.min(b_max_count_x, b_max_count_y)
-
-  list.range(0, max_count_a)
-  |> list.map(fn (a) {
-    list.range(0, max_count_b)
-    |> list.map(fn (b) { #(a, b) })
-  })
-  |> list.flatten
-  |> list.filter(fn (factors) {
-    let #(factor_a, factor_b) = factors
-
-    let pos = Position(
-      x: { factor_a * machine.a.x } + { factor_b * machine.b.x },
-      y: { factor_a * machine.a.y } + { factor_b * machine.b.y }
-    )
-    pos == machine.prize
-  })
-}
-
-/// Score a combination of a and b button presses
-fn score_combination(combination: #(Int, Int)) {
-  let #(a, b) = combination
-  { a * 3 } + b
-}
-
-/// Sort a list of combinations by scoring them according to the value of button A and B (3 & 1)
-fn sort_combinations(combinations: List(#(Int, Int))) {
-  list.sort(combinations, fn (first, second) {
-    int.compare(score_combination(first), score_combination(second))
-  })
+  case x_matches && y_matches {
+    True -> { 3 * a_count } + b_count
+    False -> 0
+  }
 }
 
 pub fn main() {
@@ -148,14 +138,7 @@ pub fn main() {
   |> parse_input([])
   |> list.map(fn (machine_result) {
     let assert Ok(machine) = machine_result
-
-    let combinations = get_possible_combinations(machine)
-    |> sort_combinations
-
-    case combinations {
-      [first, .._] -> score_combination(first)
-      _ -> 0
-    }
+    solve_machine(machine)
   })
   |> utils.sum
   |> io.debug
