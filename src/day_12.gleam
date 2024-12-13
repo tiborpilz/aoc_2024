@@ -1,15 +1,10 @@
 import gleam/dict
-import gleam/float
 import gleam/int
 import gleam/io
 import gleam/list
-import gleam/result
 import gleam/string
 import grid
 import utils
-
-type Region =
-  #(String, List(#(Int, Int)))
 
 /// Get the surrounding (directly adjacent) cells
 fn get_surrounding_cells(pos: #(Int, Int)) {
@@ -81,22 +76,11 @@ fn get_same_neighbors_extended(grid: grid.Grid(String), cell: #(Int, Int)) {
   })
 }
 
-fn convert_to_checked_regions(regions: List(List(#(Int, Int)))) {
-  list.fold(regions, dict.new(), fn(row_acc, row_curr) {
-    list.fold(row_curr, row_acc, fn(col_acc, cell) {
-      dict.insert(col_acc, cell, True)
-    })
-  })
-}
-
 fn get_region(
   grid: grid.Grid(String),
   candidate_pos: #(Int, Int),
   current_value: String,
   checked_cells: grid.Grid(Bool),
-  // current_region: List(#(Int, Int)),
-  // regions: List(List(#(Int, Int))),
-  // visited_seeds: List(#(Int, Int))
 ) -> #(List(#(Int, Int)), grid.Grid(Bool)) {
   let valid_neighbors =
     get_same_neighbors(grid, candidate_pos)
@@ -154,9 +138,7 @@ fn get_region_boundary(
   grid: grid.Grid(String),
   region: List(#(Int, Int)),
 ) -> List(#(Int, Int)) {
-  list.filter(region, fn(cell) {
-    list.length(get_same_neighbors_extended(grid, cell)) < 8
-  })
+  todo
 }
 
 fn is_border_cell(grid: grid.Grid(String), cell: #(Int, Int)) {
@@ -214,7 +196,7 @@ pub fn main() {
     |> get_region(test_key, test_value, dict.new())
     |> io.debug
 
-  let regions =
+  let _regions =
     dict.fold(grid, [], fn(acc, key, value) {
       case has_checked(acc, key) {
         True -> acc
@@ -232,30 +214,13 @@ pub fn main() {
       initial_border_cell,
     )
 
-  // let assert Ok(first_boundary) = regions
-  // |> list.map(fn (region) {
-  //   get_region_boundary(grid, region)
-  // })
-  // |> list.first
-
   let #(new_grid, _) =
     list.fold(border, #(grid, 0), fn(acc, curr) {
       let counter = acc.1 + 1
       #(dict.insert(acc.0, curr, int.to_string(counter)), counter)
     })
 
-  // let #(new_grid, _) = list.fold(sorted_boundary, #(grid, 0), fn (acc, curr) {
-  //   let counter = acc.1 + 1
-  //   #(dict.insert(acc.0, curr, int.to_string(counter)), counter)
-  // })
-
   new_grid
   |> grid.to_lists
   |> list.map(fn(row) { io.debug(row) })
-  // regions
-  // |> list.map(fn (region) {
-  //   get_circumference(grid, region) * list.length(region)
-  // })
-  // |> utils.sum
-  // |> io.debug
 }
