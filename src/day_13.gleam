@@ -124,7 +124,7 @@ fn parse_input(
 
 /// Solve the linear equation given by `a_count * (a.x, a.y) + b_count * (b.x, b.y) = (prize.x, prize.y)`
 /// After solving, double check whether the solutions fit or wheter there's a rounding error.
-/// Then, return the score of your solution as speficied. (`3 * a_count + b_count`)
+/// Then, return the score of the solution as speficied. (`3 * a_count + b_count`)
 pub fn solve_machine(machine: ClawMachine) {
   let ClawMachine(a, b, p) = machine
 

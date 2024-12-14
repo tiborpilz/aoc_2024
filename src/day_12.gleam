@@ -6,27 +6,77 @@ import gleam/string
 import grid
 import utils
 
-/// Get the surrounding (directly adjacent) cells
-fn get_surrounding_cells(pos: #(Int, Int)) {
+type GlobalDirections {
+  North
+  East
+  South
+  West
+}
+
+type LocalDirections {
+  Forward
+  Left
+  Right
+  Backward
+}
+
+/// Get the adjacent cells
+///
+/// oAo
+/// AXA
+/// oAo
+///
+/// For the cell "X" in the middle, the adjacent cells are the ones that can be
+/// reached by moving one step in any vertical or horizontal direction.
+/// The 4 cross-shaped cells "A" are the adjacent cells.
+fn get_adjacent_cells(pos: #(Int, Int)) {
   let #(y, x) = pos
 
   [#(y - 1, x), #(y, x + 1), #(y + 1, x), #(y, x - 1)]
 }
 
-/// Get the surrounding (both direct and diagonal) cells
-fn get_surrounding_cells_extended(pos: #(Int, Int)) {
+/// Get the surrounding cells (both direct and diagonal)
+///
+/// oAo
+/// AXA
+/// oAo
+///
+/// here, the surrounding cells for "X" in the middle are all 8 cells around it.
+/// ["o", "A", "o", "A", "A", "A", "o", "A"]
+fn get_surrounding_cells(pos: #(Int, Int)) {
   let #(y, x) = pos
 
-  [
-    #(y - 1, x - 1),
-    #(y - 1, x),
-    #(y - 1, x + 1),
-    #(y, x - 1),
-    #(y, x + 1),
-    #(y + 1, x - 1),
-    #(y + 1, x),
-    #(y + 1, x + 1),
-  ]
+  list.range(-1,1)
+  |> list.map(fn (y_offset) {
+    list.range(-1, 1)
+    |> list.map(fn (x_offset) { #(y + y_offset, x + x_offset) })
+  })
+  |> list.flatten
+  |> list.filter(fn (cell) { cell != #(0, 0) })
+}
+
+/// Get adjacent cells with the same value
+fn get_same_adjacents(grid: grid.Grid(String), cell: #(Int, Int)) {
+  let assert Ok(cell_value) = dict.get(grid, cell)
+
+  list.fold(get_adjacent_cells(cell), [], fn(acc, curr) {
+    case dict.get(grid, curr) {
+      Ok(value) if value == cell_value -> [curr, ..acc]
+      _ -> acc
+    }
+  })
+}
+
+/// Get surrounding cells with the same value
+fn get_same_surrounding(grid: grid.Grid(String), cell: #(Int, Int)) {
+  let assert Ok(cell_value) = dict.get(grid, cell)
+
+  list.fold(get_surrounding_cells(cell), [], fn(acc, curr) {
+    case dict.get(grid, curr) {
+      Ok(value) if value == cell_value -> [curr, ..acc]
+      _ -> acc
+    }
+  })
 }
 
 /// Get the circumference for the given region.
@@ -53,29 +103,6 @@ fn get_circumference(grid: grid.Grid(String), region: List(#(Int, Int))) {
   })
 }
 
-/// Get neighboring cells with the same value
-fn get_same_neighbors(grid: grid.Grid(String), cell: #(Int, Int)) {
-  let assert Ok(cell_value) = dict.get(grid, cell)
-
-  list.fold(get_surrounding_cells(cell), [], fn(acc, curr) {
-    case dict.get(grid, curr) {
-      Ok(value) if value == cell_value -> [curr, ..acc]
-      _ -> acc
-    }
-  })
-}
-
-fn get_same_neighbors_extended(grid: grid.Grid(String), cell: #(Int, Int)) {
-  let assert Ok(cell_value) = dict.get(grid, cell)
-
-  list.fold(get_surrounding_cells_extended(cell), [], fn(acc, curr) {
-    case dict.get(grid, curr) {
-      Ok(value) if value == cell_value -> [curr, ..acc]
-      _ -> acc
-    }
-  })
-}
-
 fn get_region(
   grid: grid.Grid(String),
   candidate_pos: #(Int, Int),
@@ -83,7 +110,7 @@ fn get_region(
   checked_cells: grid.Grid(Bool),
 ) -> #(List(#(Int, Int)), grid.Grid(Bool)) {
   let valid_neighbors =
-    get_same_neighbors(grid, candidate_pos)
+    get_same_adjacents(grid, candidate_pos)
     |> list.filter(fn(neighbor) {
       case dict.get(checked_cells, neighbor) {
         Ok(True) -> False
@@ -134,15 +161,8 @@ fn sort_boundary(
   }
 }
 
-fn get_region_boundary(
-  grid: grid.Grid(String),
-  region: List(#(Int, Int)),
-) -> List(#(Int, Int)) {
-  todo
-}
-
 fn is_border_cell(grid: grid.Grid(String), cell: #(Int, Int)) {
-  list.length(get_same_neighbors_extended(grid, cell)) < 8
+  list.length(get_same_surrounding(grid, cell)) < 8
 }
 
 fn find_first_border_cell(grid: grid.Grid(String), region: List(#(Int, Int))) {
@@ -153,7 +173,7 @@ fn find_first_border_cell(grid: grid.Grid(String), region: List(#(Int, Int))) {
 
 fn find_next_border_cell(grid: grid.Grid(String), cell: #(Int, Int)) {
   let assert Ok(cell) =
-    get_same_neighbors(grid, cell)
+    get_same_adjacents(grid, cell)
     |> list.find(fn(cell) { is_border_cell(grid, cell) })
   cell
 }
