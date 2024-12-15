@@ -81,6 +81,32 @@ pub fn get_column(grid: Grid(a), index: Int) -> Result(List(a), Nil) {
 }
 
 ///
+/// Gets the column of a given index as a list of tuples of indices value
+pub fn get_indexed_column(grid: Grid(a), index: Int) -> Result(List(#(#(Int, Int), a)), Nil) {
+  let #(height, _) = size(grid)
+
+  list.range(0, height - 1)
+  |> list.map(fn(row_index) {
+    use value <- result.try(dict.get(grid, #(row_index, index)))
+    Ok(#(#(row_index, index), value))
+  })
+  |> result.all
+}
+
+///
+/// Gets the row of a given index as a list of tuples of indices and values
+pub fn get_indexed_row(grid: Grid(a), index: Int) -> Result(List(#(#(Int, Int), a)), Nil) {
+  let #(_, width) = size(grid)
+
+  list.range(0, width - 1)
+  |> list.map(fn(col_index) {
+    use value <- result.try(dict.get(grid, #(index, col_index)))
+    Ok(#(#(index, col_index), value))
+  })
+  |> result.all
+}
+
+///
 /// Transforms a grid to a list of lists (row-wise)
 pub fn to_lists(grid: Grid(a)) -> List(List(a)) {
   let #(height, _) = size(grid)

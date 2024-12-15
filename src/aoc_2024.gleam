@@ -16,6 +16,7 @@ fn day_2_cmd() -> glint.Command(Nil) {
 }
 
 pub fn main() {
+  // TODO: Make this work
   glint.new()
   |> glint.with_name("Advent of Code 2024")
   |> glint.pretty_help(glint.default_pretty_help())
