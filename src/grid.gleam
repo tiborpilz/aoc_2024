@@ -81,6 +81,48 @@ pub fn get_column(grid: Grid(a), index: Int) -> Result(List(a), Nil) {
 }
 
 ///
+/// Transforms a grid to a list of lists (row-wise)
+pub fn to_lists(grid: Grid(a)) -> List(List(a)) {
+  let #(height, _) = size(grid)
+
+  list.range(0, height - 1)
+  |> list.map(fn(row_index) {
+    let assert Ok(row) = get_row(grid, row_index)
+    row
+  })
+}
+
+///
+/// Transforms a grid to a list of lists of tuples of indices and values (row-wise)
+pub fn to_row_list_indexed(grid: Grid(a)) -> List(List(#(#(Int, Int), a))) {
+  let #(height, _) = size(grid)
+
+  list.range(0, height - 1)
+  |> list.map(fn (row_index) {
+    dict.filter(grid, fn (key, _) {
+      let #(element_row, _) = key
+      element_row == row_index
+    })
+    |> dict.to_list
+  })
+}
+
+///
+/// Transforms a grid to a list of list of tuples of indices and values (column-wise)
+pub fn to_col_list_indexed(grid: Grid(a)) -> List(List(#(#(Int, Int), a))) {
+  let #(_, width) = size(grid)
+
+  list.range(0, width - 1)
+  |> list.map(fn (col_index) {
+    dict.filter(grid, fn (key, _) {
+      let #(_, element_col) = key
+      element_col == col_index
+    })
+    |> dict.to_list
+  })
+}
+
+///
 /// Gets the column of a given index as a list of tuples of indices value
 pub fn get_indexed_column(grid: Grid(a), index: Int) -> Result(List(#(#(Int, Int), a)), Nil) {
   let #(height, _) = size(grid)
@@ -93,6 +135,13 @@ pub fn get_indexed_column(grid: Grid(a), index: Int) -> Result(List(#(#(Int, Int
   |> result.all
 }
 
+// ///
+// /// Gets a list of all rows as a list of tuples of indices and values
+// pub fn get_indexed_rows(grid: Grid(a)) -> List(List(#(#(Int, Int), a))) {
+//   grid
+//   |> to_lists
+// }
+
 ///
 /// Gets the row of a given index as a list of tuples of indices and values
 pub fn get_indexed_row(grid: Grid(a), index: Int) -> Result(List(#(#(Int, Int), a)), Nil) {
@@ -104,18 +153,6 @@ pub fn get_indexed_row(grid: Grid(a), index: Int) -> Result(List(#(#(Int, Int), 
     Ok(#(#(index, col_index), value))
   })
   |> result.all
-}
-
-///
-/// Transforms a grid to a list of lists (row-wise)
-pub fn to_lists(grid: Grid(a)) -> List(List(a)) {
-  let #(height, _) = size(grid)
-
-  list.range(0, height - 1)
-  |> list.map(fn(row_index) {
-    let assert Ok(row) = get_row(grid, row_index)
-    row
-  })
 }
 
 pub fn debug_column() {
