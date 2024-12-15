@@ -18,7 +18,7 @@ pub fn read_lines(filepath: String) {
   |> string.split("\n")
 }
 
-pub fn parse_entry(entry: String) {
+pub fn parse_entry(entry: String) -> Int {
   entry
   |> string.trim
   |> int.base_parse(10)
@@ -65,4 +65,23 @@ pub fn join(chars: List(String)) {
 /// Gets the entry of a 1D-List at a given index
 pub fn at(data: List(a), index: Int) {
   data |> list.take(index + 1) |> list.last
+}
+
+/// Given a list of strings, return a list of lists of strings,
+/// seperated by empty rows
+pub fn split_by_empty_row(input: List(String)) -> List(List(String)) {
+  input
+  |> list.fold([[]], fn(acc, line) {
+    let assert [curr, ..rest] = acc
+
+    case line {
+      "" -> [[], ..[list.reverse(curr), ..rest]]
+      _ -> [[line, ..curr], ..rest]
+    }
+  })
+  |> list.reverse
+}
+
+pub fn main() {
+  ["a", "", "b", "", "c"]
 }
