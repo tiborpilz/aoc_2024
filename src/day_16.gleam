@@ -120,7 +120,11 @@ pub fn is_start(map: Map, position: grid.Position) {
   }
 }
 
-/// If we're not on the same x or y line, assume we have to turn once (i.e. that there are no walls)
+/// Get a heuristic for the score from one position to another.
+/// This assumes that there are no walls between the two positions and, using the taxicab distance
+/// as a basis, adds 1000 depending on whether a single turn needs to be made or not.
+///
+/// (If we're not on the same x or y line, we assoume that we have to turn once)
 pub fn heuristic_score(
   current_position: grid.Position,
   target_position: grid.Position,
@@ -139,33 +143,19 @@ pub fn heuristic_score(
   + int.absolute_value(current_y - target_y)
 }
 
+/// Get the step cost associated with two directions.
+/// If they are the same, it's 1 - if they are different, we assume that we have to turn once,
+/// as there is no path that makes a 180 degree turn necessary.
 pub fn get_step_cost(
   current_direction: Direction,
   next_direction: Direction,
 ) -> Int {
-  case current_direction, next_direction {
+  case current_direction, current_direction == next_direction {
     None, _ -> 1001
-    North, North -> 1
-    East, East -> 1
-    South, South -> 1
-    West, West -> 1
-    _, _ -> 1001
+    // From a fresh start we always have to turn once
+    _, False -> 1001
+    _, True -> 1
   }
-}
-
-pub fn debug_result(
-  result_tuple: #(List(#(Int, Path)), grid.Grid(List(#(Int, Path)))),
-) {
-  let #(paths, known_paths) = result_tuple
-  io.debug("Paths:")
-  paths
-  |> list.length
-
-  io.debug("Known Paths:")
-  known_paths
-  |> dict.size
-
-  result_tuple
 }
 
 pub fn get_scores_memoized(
@@ -197,14 +187,11 @@ pub fn get_scores_memoized(
                 |> list.sort(fn(a, b) {
                   let #(_, direction_a) = a
                   let #(_, direction_b) = b
-                  let step_cost_a =
-                    get_step_cost(current_direction, direction_a)
-                  let step_cost_b =
-                    get_step_cost(current_direction, direction_b)
 
-                  let estimated_score_a = step_cost_a
-                  let estimated_score_b = step_cost_b
-                  int.compare(estimated_score_a, estimated_score_b)
+                  int.compare(
+                    get_step_cost(current_direction, direction_a),
+                    get_step_cost(current_direction, direction_b),
+                  )
                 })
               // A Star babyyy
 
