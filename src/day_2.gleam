@@ -1,9 +1,19 @@
 //// Part 1 is more or less straightforward. The interesting thing is the pairwise comparison
 //// with a given comparator, making `ascending(l)` and `descending(l)` possible without
 //// too much code duplication.
+////
 //// The more elegant approach could've been to infer whether the list is ascending or descending
 //// by comparing the first and second elements, and then using that to determine the comparator.
 //// This way, we're checking the list twice, but hey, what's a factor of two between friends?
+
+//// Part 2 is a bit more tricky. The techniques are mostly the same as the one used in part 1, save
+//// for allowing one constraint violation per row. For that, this solution uses brute force to generate
+//// all possible distinct sublists of same ordering and length n-1, checks all of them for monotonicity
+//// and safe distances and then passes if any of them pass.
+//// The more efficient way to solve this would be to keep count of the number of
+//// unsafe distances/monotonicity violations in the list during the entire comparison, and allow one.
+//// That would still allow for pairwise comparisons and thus be O(n).
+
 
 import gleam/int
 import gleam/list
@@ -53,14 +63,6 @@ pub fn part_1() {
   |> list.length
   |> utils.format_int
 }
-
-// This one is a bit more tricky. The techniques are mostly the same as the one used in part 1, save
-// for allowing one constraint violation per row. For that, this solution uses brute force to generate
-// all possible distinct sublists of same ordering and length n-1, checks all of them for monotonicity
-// and safe distances and then passes if any of them pass.
-// The more efficient way to solve this would be to keep count of the number of
-// unsafe distances/monotonicity violations in the list during the entire comparison, and allow one.
-// That would still allow for pairwise comparisons and thus be O(n).
 
 /// Given a list of integers of length n, return n distinct, same-ordered sublists of length n-1
 pub fn get_sublists(l: List(Int)) {

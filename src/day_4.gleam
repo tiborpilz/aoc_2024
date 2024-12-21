@@ -1,6 +1,11 @@
-// The idea is to split the incoming lines into a 2D array of single characters,
-// then we can iterate over sliding windows of 4 characters horizontally, vertically
-// and diagonally and check for "XMAS" ans "SAMX" in these windows, adding to the count.
+//// The general idea is to split the incoming lines into a 2D array of single characters,
+//// then we can iterate over sliding windows of 4 characters horizontally, vertically
+//// and diagonally and check for "XMAS" ans "SAMX" in these windows, adding to the count.
+////
+//// Part 2 is very similar, only we check each element's cross value which we first get as
+//// a list of list of strings.
+////
+//// (This solution would benefit from using the shared `grid` module, but I haven't built that at that time).
 
 import gleam/io
 import gleam/list

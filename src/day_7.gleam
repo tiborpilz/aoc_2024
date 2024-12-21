@@ -1,3 +1,19 @@
+//// The central idea of this is to represent each possible combination of n operators with
+//// an n-ary number.
+////
+//// So for part 1, which only uses two operators, we can use a binary number:
+////
+//// `1011` would represent the combination of `a + b * c + d + e`
+////
+//// Part 2 uses three operators, so we can use a ternary number:
+////
+//// `102` would represent the combination of `a + b * c <concat> d`
+////
+//// This way, we can range over all possible combinations of operators and apply them to the input.
+////
+//// Enumerating all possibilities isn't the most efficient way, but the `get_operator_combination`
+//// function is rather elegant.
+
 import gleam/float
 import gleam/int
 import gleam/io
@@ -6,7 +22,7 @@ import gleam/result
 import gleam/string
 import utils
 
-// Having n possible operators in m possible places can be encoded as an n-ary number with m places
+/// Encode n possible operators in m possible places
 pub fn get_operator_combinations(input: List(Int), num_operators: Int) {
   let list_length = list.length(input) - 1
   let assert Ok(binary_range_float) =

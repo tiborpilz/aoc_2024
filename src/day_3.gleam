@@ -1,3 +1,11 @@
+//// For part 1, matching all regexes like `mul(1,4)`, capturing the numbers and then
+//// summing the products is enough.
+////
+//// For part 2, we can non-greedily match everything between `don't()` and `do()` (or line end)
+//// and replace that with an empty string, as we don't want to consider those blocks.
+//// This leaves us with the same problem as part 1, which means we can reuse the same function.
+
+
 import gleam/int
 import gleam/list
 import gleam/option
@@ -8,9 +16,6 @@ pub fn load_rows() {
   "./data/day_3.txt"
   |> utils.read
 }
-
-// For part 1, matching all regexes like `mul(1,4)`, capturing the numbers and then
-// summing the products is enough.
 
 /// Parse a string and return the sum of the products defined by `mul(a, b)` expressions
 pub fn get_mult_sum(s: String) {
@@ -33,10 +38,6 @@ pub fn part_1() {
   |> get_mult_sum
   |> utils.format_int
 }
-
-// For part 2, we can non-greedily match everything between `don't()` and `do()` (or line end)
-// and replace that with an empty string, as we don't want to consider those blocks.
-// This leaves us with the same problem as part 1, which means we can reuse the same function.
 
 /// Remove everything between a `don't()` and a `do()`, spanning multiple lines
 pub fn remove_dont_blocks(input_string: String) {

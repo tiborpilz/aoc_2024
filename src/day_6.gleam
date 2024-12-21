@@ -1,15 +1,16 @@
-// Idea; Reuse the 2D window thing from day 4
-// treat the whole thing as a 2D cellular automaton
-// Scan for 3x3 windows that contain the player character
-// ("^", ">", "v", "<").
-
-// Second idea: recursive function:
-// If no ">" or similar character is found, return the 2D array.
-// Otherwise, find that character, check the direction its pointing, and then update the grid:
-// - If it is pointing "outside", so ">" is at the right edge, etc., replace the character with "."
-// - If it is pointing at "." or "X", replace the arrow with "X" and the "." with the arrow.
-// - If it is pointing at "#", rotate it by 90 degrees
-// Then, call the function again with the updated grid.
+//// This is being solved by a recursive function:
+////
+//// If no ">" or similar character is found, return the 2D array.
+//// Otherwise, find that character, check the direction its pointing, and then update the grid:
+//// - If it is pointing "outside", so ">" is at the right edge, etc., replace the character with "."
+//// - If it is pointing at "." or "X", replace the arrow with "X" and the "." with the arrow.
+//// - If it is pointing at "#", rotate it by 90 degrees
+//// Then, call the function again with the updated grid.
+////
+//// This also could benefit from using the shared `grid` module - it also should transform the
+//// individual directions in their own types instead of always comparing strings. You can see these
+//// sort of ideas develop in the later solutions, for now, I'm a bit too lazy to refactor this.
+//// (Also it's a nice snapshot in time of my gleam-learning journey)
 
 import gleam/dict
 import gleam/io
@@ -55,40 +56,6 @@ pub fn get_element_index(row: List(a), element: a) -> Result(Int, Nil) {
 // and if a guard is pointing to the left or up, the row has been reverted.
 // This means that we can assume that a guard always moves in the direction of the list.
 pub fn update_normalized_row(row: List(String)) -> List(String) {
-  // let pairs = row
-  // |> list.window(2)
-  // |> list.map(fn (pair) {
-  //   let assert [l, r] = pair
-
-  //   case l, r {
-  //     "v", "#" -> ["<", "#"]
-  //     "^", "#" -> [">", "#"]
-  //     "<", "#" -> ["^", "#"]
-  //     ">", "#" -> ["v", "#"]
-
-  //     "v", _ -> ["j", "v"]
-  //     "^", _ -> ["k", "^"]
-  //     "<", _ -> ["h", "<"]
-  //     ">", _ -> ["l", ">"]
-
-  //     x, "v" -> [x, "j"]
-  //     x, "^" -> [x, "k"]
-  //     x, "<" -> [x, "h"]
-  //     x, ">" -> [x, "l"]
-
-  //     a, b -> [a, b]
-  //   }
-  // })
-
-  // let assert Ok(last_pair) = list.last(pairs)
-  // let assert Ok(last_element) = list.last(last_pair)
-
-  // let first_of_pairs = pairs |> list.map(fn (p) {
-  //   let assert Ok(element) = list.first(p)
-  //   element
-  // })
-
-  // list.append(first_of_pairs, [last_element])
   case row {
     [] -> []
 

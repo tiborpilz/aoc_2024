@@ -1,9 +1,18 @@
-//// Create ordering rule from list of strings "a|b" where a needs to come before b
+//// To solve part 1, we create ordering rule from list of strings "a|b" where a needs to come before b
 ////
-//// Since numbers don't have to be in an ordering rule, use the negation, so "a|b"
+//// Since numbers don't have to be in an ordering rule, we use the negation, so "a|b"
 //// results in a rule #(b, a), which, if violated, fails the check.
-//// To check for a list [a,b,c,d] check the ordering for
+//// To check for a list [a,b,c,d] we check the ordering for
 //// #(a, [b,c,d]), #(b, [c,d]) and #(c, [d])
+////
+//// Part 2 is tricky. In general, the rules form a cyclic graph, which means we can't just
+//// flatten them to a pre-set order. Since this is a naive approach we run the risk of entering
+//// loops where the recursive solve function keeps swapping forever.
+////
+//// We _could_ build some sort of per-element pre-solver to check which order we need to do the swaps
+//// in to get a valid page (which is NP-hard, and, more importantly, effort)
+//// orrrrrrr
+//// we just randomize the rules every time, lol
 
 import gleam/bool
 import gleam/int

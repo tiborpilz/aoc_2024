@@ -1,3 +1,13 @@
+//// Day 1
+////
+//// For part 1, we can use the builtin `list.zip` function to pair up the two lists
+//// and then get the absolute difference between the two numbers in each pair.
+//// The result can then be summed.
+////
+//// For part 2, we take each element of the left list and sort the right list by the
+//// distance to calculate a per-element similarity (which can then be summed again).
+
+
 import gleam/int
 import gleam/io
 import gleam/list
