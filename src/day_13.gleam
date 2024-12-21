@@ -51,19 +51,19 @@ pub type ClawMachine {
 }
 
 /// Parse two strings into a positon
-fn strings_to_position(raw_x: String, raw_y: String) -> Result(Position, Nil) {
+pub fn strings_to_position(raw_x: String, raw_y: String) -> Result(Position, Nil) {
   use x <- result.try(int.parse(raw_x))
   use y <- result.try(int.parse(raw_y))
 
   Ok(Position(x, y))
 }
 
-fn add_to_position(position: Position, value: Int) -> Position {
+pub fn add_to_position(position: Position, value: Int) -> Position {
   Position(x: position.x + value, y: position.y + value)
 }
 
 /// Parse a line containing button information
-fn parse_button(line: String) -> Result(Position, Nil) {
+pub fn parse_button(line: String) -> Result(Position, Nil) {
   let assert Ok(button_regex) =
     regexp.from_string("Button (A|B): X\\+([0-9]+), Y\\+([0-9]+)")
 
@@ -79,7 +79,7 @@ fn parse_button(line: String) -> Result(Position, Nil) {
 }
 
 /// Parse a line containing Prize information
-fn parse_prize(line: String, prize_offset: Int) -> Result(Position, Nil) {
+pub fn parse_prize(line: String, prize_offset: Int) -> Result(Position, Nil) {
   let assert Ok(prize_regex) =
     regexp.from_string("Prize: X=([0-9]+), Y=([0-9]+)")
 
@@ -97,7 +97,7 @@ fn parse_prize(line: String, prize_offset: Int) -> Result(Position, Nil) {
 }
 
 /// Parse a block containing three lines ('Button A:', 'Button B:' & Prize:)
-fn parse_block(
+pub fn parse_block(
   block: List(String),
   prize_offset: Int,
 ) -> Result(ClawMachine, Nil) {
@@ -116,7 +116,7 @@ fn parse_block(
 }
 
 /// Parse lines of text into a list of ClawMachines
-fn parse_input(
+pub fn parse_input(
   lines: List(String),
   result: List(Result(ClawMachine, Nil)),
   prize_offset: Int,
@@ -181,4 +181,6 @@ pub fn main() {
 
   io.println("Part 1: " <> int.to_string(result_1))
   io.println("Part 2: " <> int.to_string(result_2))
+
+  Nil
 }

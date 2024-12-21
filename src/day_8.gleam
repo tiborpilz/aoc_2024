@@ -103,4 +103,6 @@ pub fn main() {
   |> list.filter(fn(el) { el == "#" })
   |> list.length
   |> io.debug
+
+  Nil
 }

@@ -7,7 +7,7 @@ import gleam/list
 import gleam/string
 import utils
 
-fn check(chars: List(String)) {
+pub fn check(chars: List(String)) {
   chars
   |> list.window(4)
   |> list.map(utils.join)
@@ -15,7 +15,7 @@ fn check(chars: List(String)) {
   |> list.length
 }
 
-fn count_crosses(crosses: List(List(String))) {
+pub fn count_crosses(crosses: List(List(String))) {
   crosses
   |> list.map(utils.join)
   |> list.filter(fn(cross) {
@@ -28,19 +28,19 @@ fn count_crosses(crosses: List(List(String))) {
 }
 
 /// Gets the entry of a 1D-List at a given index
-fn at(data: List(a), index: Int) {
+pub fn at(data: List(a), index: Int) {
   data |> list.take(index + 1) |> list.last
 }
 
 /// Gets the entry at a 2D-List given xy index
-fn at_xy(data: List(List(a)), y: Int, x: Int) {
+pub fn at_xy(data: List(List(a)), y: Int, x: Int) {
   let assert Ok(row) = data |> at(x)
   let assert Ok(entry) = row |> at(y)
   entry
 }
 
 /// Get nxn chunks from a bigger mxm grid
-fn get_chunks(data: List(List(String)), chunk_size: Int) {
+pub fn get_chunks(data: List(List(String)), chunk_size: Int) {
   data
   |> list.window(chunk_size)
   |> list.flat_map(fn(chunk) {
@@ -51,7 +51,7 @@ fn get_chunks(data: List(List(String)), chunk_size: Int) {
 }
 
 /// Gets all 4 line diagonals from a given grid
-fn get_diagonals(data: List(List(String))) {
+pub fn get_diagonals(data: List(List(String))) {
   data
   |> get_chunks(4)
   |> list.flat_map(fn(chunk) {
@@ -71,7 +71,7 @@ fn get_diagonals(data: List(List(String))) {
 }
 
 /// Gets all 3-line Crosses from a given grid
-fn get_crosses(data: List(List(String))) {
+pub fn get_crosses(data: List(List(String))) {
   data
   |> get_chunks(3)
   |> list.map(fn(chunk) {
@@ -86,7 +86,7 @@ fn get_crosses(data: List(List(String))) {
   })
 }
 
-fn get_data() {
+pub fn get_data() {
   "./data/day_4.txt"
   |> utils.read_lines
   |> list.map(fn(line) { line |> string.split("") })
@@ -128,4 +128,6 @@ pub fn part_2() {
 
 pub fn main() {
   part_2()
+
+  Nil
 }

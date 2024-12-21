@@ -2,8 +2,6 @@ import gleam/dict
 import gleam/int
 import gleam/io
 import gleam/list
-import gleam/option
-import gleam/set
 import grid
 import utils
 
@@ -213,7 +211,7 @@ pub fn get_scores_memoized(
               list.fold(possible_steps, #(scores, known_scores), fn(acc, curr) {
                 let #(position, direction) = curr
                 let new_score = get_step_cost(current_direction, direction)
-                let #(new_scores_acc, known_scores_acc) = acc
+                let #(new_scores_acc, _) = acc
 
                 let #(new_scores, new_known_scores) =
                   get_scores_memoized(
@@ -404,4 +402,6 @@ pub fn main() {
   //   io.debug("Score: " <> int.to_string(score))
   //   print_path(map, path)
   // })
+
+  Nil
 }

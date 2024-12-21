@@ -6,14 +6,14 @@ import gleam/result
 import gleam/string
 import utils
 
-fn get_num_digits(input: Int) -> Int {
+pub fn get_num_digits(input: Int) -> Int {
   let assert Ok(digits) = int.digits(input, 10)
   list.length(digits)
 }
 
 /// Given a number 1234, return two numbers 12, 34. Assumes the number
 /// has an even amount of digits.
-fn split_digits(input: Int) -> List(Int) {
+pub fn split_digits(input: Int) -> List(Int) {
   let assert Ok(digits) = int.digits(input, 10)
   let assert Ok(half_index) = int.floor_divide(list.length(digits), 2)
 
@@ -139,4 +139,6 @@ pub fn main() {
   |> process_line_out_of_order(75)
   |> count_entries
   |> io.debug
+
+  Nil
 }

@@ -15,7 +15,7 @@ import utils
 /// For the cell "X" in the middle, the adjacent cells are the ones that can be
 /// reached by moving one step in any vertical or horizontal direction.
 /// The 4 cross-shaped cells "A" are the adjacent cells.
-fn get_adjacent_cells(pos: #(Int, Int)) {
+pub fn get_adjacent_cells(pos: #(Int, Int)) {
   let #(y, x) = pos
 
   [#(y - 1, x), #(y, x + 1), #(y + 1, x), #(y, x - 1)]
@@ -29,7 +29,7 @@ fn get_adjacent_cells(pos: #(Int, Int)) {
 ///
 /// here, the surrounding cells for "X" in the middle are all 8 cells around it.
 /// ["o", "A", "o", "A", "A", "A", "o", "A"]
-fn get_surrounding_cells(pos: #(Int, Int)) {
+pub fn get_surrounding_cells(pos: #(Int, Int)) {
   let #(y, x) = pos
 
   list.range(-1, 1)
@@ -42,7 +42,7 @@ fn get_surrounding_cells(pos: #(Int, Int)) {
 }
 
 /// Get adjacent cells with the same value
-fn get_same_adjacents(grid: grid.Grid(String), cell: #(Int, Int)) {
+pub fn get_same_adjacents(grid: grid.Grid(String), cell: #(Int, Int)) {
   let assert Ok(cell_value) = dict.get(grid, cell)
 
   list.fold(get_adjacent_cells(cell), [], fn(acc, curr) {
@@ -54,7 +54,7 @@ fn get_same_adjacents(grid: grid.Grid(String), cell: #(Int, Int)) {
 }
 
 /// Get surrounding cells with the same value
-fn get_same_surrounding(grid: grid.Grid(String), cell: #(Int, Int)) {
+pub fn get_same_surrounding(grid: grid.Grid(String), cell: #(Int, Int)) {
   let assert Ok(cell_value) = dict.get(grid, cell)
 
   list.fold(get_surrounding_cells(cell), [], fn(acc, curr) {
@@ -89,7 +89,7 @@ pub fn get_circumference(grid: grid.Grid(String), region: List(#(Int, Int))) {
   })
 }
 
-fn get_region(
+pub fn get_region(
   grid: grid.Grid(String),
   candidate_pos: #(Int, Int),
   current_value: String,
@@ -117,7 +117,7 @@ fn get_region(
   )
 }
 
-fn find_adjacent_element(cell: #(Int, Int), from: List(#(Int, Int))) {
+pub fn find_adjacent_element(cell: #(Int, Int), from: List(#(Int, Int))) {
   io.debug(cell)
   io.debug(from)
   let element =
@@ -131,7 +131,7 @@ fn find_adjacent_element(cell: #(Int, Int), from: List(#(Int, Int))) {
   }
 }
 
-fn sort_boundary(
+pub fn sort_boundary(
   current_boundary: List(#(Int, Int)),
   rest_boundary: List(#(Int, Int)),
 ) {
@@ -147,24 +147,24 @@ fn sort_boundary(
   }
 }
 
-fn is_border_cell(grid: grid.Grid(String), cell: #(Int, Int)) {
+pub fn is_border_cell(grid: grid.Grid(String), cell: #(Int, Int)) {
   list.length(get_same_surrounding(grid, cell)) < 8
 }
 
-fn find_first_border_cell(grid: grid.Grid(String), region: List(#(Int, Int))) {
+pub fn find_first_border_cell(grid: grid.Grid(String), region: List(#(Int, Int))) {
   let assert Ok(cell) =
     list.find(region, fn(cell) { is_border_cell(grid, cell) })
   cell
 }
 
-fn find_next_border_cell(grid: grid.Grid(String), cell: #(Int, Int)) {
+pub fn find_next_border_cell(grid: grid.Grid(String), cell: #(Int, Int)) {
   let assert Ok(cell) =
     get_same_adjacents(grid, cell)
     |> list.find(fn(cell) { is_border_cell(grid, cell) })
   cell
 }
 
-fn accumulate_border(
+pub fn accumulate_border(
   grid: grid.Grid(String),
   current: #(Int, Int),
   border: List(#(Int, Int)),
@@ -182,7 +182,7 @@ fn accumulate_border(
   }
 }
 
-fn has_checked(regions: List(List(#(Int, Int))), candidate: #(Int, Int)) {
+pub fn has_checked(regions: List(List(#(Int, Int))), candidate: #(Int, Int)) {
   regions
   |> list.any(fn(region) { list.any(region, fn(cell) { cell == candidate }) })
 }
@@ -229,4 +229,6 @@ pub fn main() {
   new_grid
   |> grid.to_lists
   |> list.map(fn(row) { io.debug(row) })
+
+  Nil
 }

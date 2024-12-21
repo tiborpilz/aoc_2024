@@ -182,4 +182,6 @@ pub fn main() {
   //   acc * list.length(curr)
   // })
   // |> io.debug
+
+  Nil
 }

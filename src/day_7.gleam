@@ -7,7 +7,7 @@ import gleam/string
 import utils
 
 // Having n possible operators in m possible places can be encoded as an n-ary number with m places
-fn get_operator_combinations(input: List(Int), num_operators: Int) {
+pub fn get_operator_combinations(input: List(Int), num_operators: Int) {
   let list_length = list.length(input) - 1
   let assert Ok(binary_range_float) =
     int.power(num_operators, int.to_float(list_length))
@@ -37,7 +37,7 @@ fn get_operator_combinations(input: List(Int), num_operators: Int) {
   })
 }
 
-fn parse_row(row: String) {
+pub fn parse_row(row: String) {
   let assert [result_raw, rest] = string.split(row, ":")
 
   let assert Ok(result) = int.parse(result_raw)
@@ -114,4 +114,6 @@ pub fn part_2() {
 
 pub fn main() {
   part_2()
+
+  Nil
 }

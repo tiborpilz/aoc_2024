@@ -22,7 +22,7 @@ pub type MapTile {
 pub type Map =
   grid.Grid(MapTile)
 
-fn to_string(tile: MapTile) -> String {
+pub fn to_string(tile: MapTile) -> String {
   case tile {
     Wall -> "#"
     Empty -> "."
@@ -31,7 +31,7 @@ fn to_string(tile: MapTile) -> String {
   }
 }
 
-fn direction_to_string(direction: Direction) -> String {
+pub fn direction_to_string(direction: Direction) -> String {
   case direction {
     Up -> "Up"
     Right -> "Right"
@@ -40,7 +40,7 @@ fn direction_to_string(direction: Direction) -> String {
   }
 }
 
-fn parse_tile(input: String) -> MapTile {
+pub fn parse_tile(input: String) -> MapTile {
   case input {
     "#" -> Wall
     "." -> Empty
@@ -50,7 +50,7 @@ fn parse_tile(input: String) -> MapTile {
   }
 }
 
-fn parse_direction(input: String) -> Direction {
+pub fn parse_direction(input: String) -> Direction {
   case input {
     "^" -> Up
     ">" -> Right
@@ -60,7 +60,7 @@ fn parse_direction(input: String) -> Direction {
   }
 }
 
-fn get_robot_row(map: Map) -> List(#(#(Int, Int), MapTile)) {
+pub fn get_robot_row(map: Map) -> List(#(#(Int, Int), MapTile)) {
   let assert Ok(row) =
     grid.to_row_list_indexed(map)
     |> list.find(fn(row) {
@@ -73,7 +73,7 @@ fn get_robot_row(map: Map) -> List(#(#(Int, Int), MapTile)) {
   row
 }
 
-fn get_robot_col(map: Map) -> List(#(#(Int, Int), MapTile)) {
+pub fn get_robot_col(map: Map) -> List(#(#(Int, Int), MapTile)) {
   let assert Ok(col) =
     grid.to_col_list_indexed(map)
     |> list.find(fn(col) {
@@ -86,7 +86,7 @@ fn get_robot_col(map: Map) -> List(#(#(Int, Int), MapTile)) {
   col
 }
 
-fn get_robot_position(map: Map) -> #(Int, Int) {
+pub fn get_robot_position(map: Map) -> #(Int, Int) {
   let assert Ok(#(pos, _)) =
     map
     |> dict.to_list
@@ -97,7 +97,7 @@ fn get_robot_position(map: Map) -> #(Int, Int) {
   pos
 }
 
-fn get_robot_path(line: List(#(#(Int, Int), MapTile))) {
+pub fn get_robot_path(line: List(#(#(Int, Int), MapTile))) {
   case line {
     [] -> panic as "Robot not found in line!"
     [#(_, Robot), ..rest] -> rest
@@ -105,14 +105,14 @@ fn get_robot_path(line: List(#(#(Int, Int), MapTile))) {
   }
 }
 
-fn is_next_space_empty(path: List(#(#(Int, Int), MapTile))) {
+pub fn is_next_space_empty(path: List(#(#(Int, Int), MapTile))) {
   case path {
     [#(_, Empty), ..] -> True
     _ -> False
   }
 }
 
-fn get_boxes_to_move(path: List(#(#(Int, Int), MapTile))) {
+pub fn get_boxes_to_move(path: List(#(#(Int, Int), MapTile))) {
   case
     list.any(path, fn(element) {
       let #(_, value) = element
@@ -137,7 +137,7 @@ fn get_boxes_to_move(path: List(#(#(Int, Int), MapTile))) {
   }
 }
 
-fn get_new_position(position: #(Int, Int), direction: Direction) -> #(Int, Int) {
+pub fn get_new_position(position: #(Int, Int), direction: Direction) -> #(Int, Int) {
   let #(y, x) = position
   case direction {
     Up -> #(y - 1, x)
@@ -147,7 +147,7 @@ fn get_new_position(position: #(Int, Int), direction: Direction) -> #(Int, Int) 
   }
 }
 
-fn move_robot(map: Map, direction: Direction) -> Map {
+pub fn move_robot(map: Map, direction: Direction) -> Map {
   let #(y, x) = get_robot_position(map)
   let new_position = get_new_position(#(y, x), direction)
 
@@ -156,7 +156,7 @@ fn move_robot(map: Map, direction: Direction) -> Map {
   |> dict.insert(new_position, Robot)
 }
 
-fn move_boxes(
+pub fn move_boxes(
   map: Map,
   direction: Direction,
   boxes: List(#(#(Int, Int), MapTile)),
@@ -169,7 +169,7 @@ fn move_boxes(
   })
 }
 
-fn try_direction(map: Map, direction: Direction) {
+pub fn try_direction(map: Map, direction: Direction) {
   let line = case direction {
     Up -> map |> get_robot_col |> list.reverse
     Right -> map |> get_robot_row
@@ -188,14 +188,14 @@ fn try_direction(map: Map, direction: Direction) {
   }
 }
 
-fn update_map(map: Map, directions: List(Direction)) -> Map {
+pub fn update_map(map: Map, directions: List(Direction)) -> Map {
   case directions {
     [] -> map
     [direction, ..rest] -> update_map(try_direction(map, direction), rest)
   }
 }
 
-fn parse_input(input: List(String)) -> #(Map, List(Direction)) {
+pub fn parse_input(input: List(String)) -> #(Map, List(Direction)) {
   let assert [raw_map, raw_directions] = utils.split_by_empty_row(input)
 
   let map_grid =
@@ -220,7 +220,7 @@ fn parse_input(input: List(String)) -> #(Map, List(Direction)) {
   #(map_grid, directions)
 }
 
-fn debug_map(map: Map) {
+pub fn debug_map(map: Map) {
   map
   |> grid.to_lists
   |> list.map(fn(row) {
@@ -230,7 +230,7 @@ fn debug_map(map: Map) {
   })
 }
 
-fn get_score(map: Map) {
+pub fn get_score(map: Map) {
   dict.filter(map, fn(_, value) { value == Box })
   |> dict.to_list
   |> list.map(fn(tile) {
@@ -261,4 +261,6 @@ pub fn main() {
   //   |> utils.join
   //   |> io.debug
   // })
+
+  Nil
 }

@@ -112,4 +112,6 @@ pub fn main() {
   })
   |> utils.sum
   |> io.debug
+
+  Nil
 }

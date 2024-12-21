@@ -14,7 +14,7 @@ import utils
 
 /// Given a rule line, parse a rule in format of "a|b" to a tuple of #(b, a).
 /// This is because we use the rule to check for validations, meaning we need to reverse the order.
-fn parse_rule(rule: String) -> #(Int, Int) {
+pub fn parse_rule(rule: String) -> #(Int, Int) {
   let assert [a, b] = string.split(rule, "|")
   let assert Ok(a_parsed) = int.parse(a)
   let assert Ok(b_parsed) = int.parse(b)
@@ -22,7 +22,7 @@ fn parse_rule(rule: String) -> #(Int, Int) {
 }
 
 /// Given a page, parse the page to a list of integers.
-fn parse_pages(page: String) -> List(Int) {
+pub fn parse_pages(page: String) -> List(Int) {
   page
   |> string.split(",")
   |> list.map(fn(x) {
@@ -33,7 +33,7 @@ fn parse_pages(page: String) -> List(Int) {
 
 /// Given the initial data (already as lines) parse the data to a tuple of a list of
 /// pages and a list of rules.
-fn parse_data(data: List(String)) {
+pub fn parse_data(data: List(String)) {
   let rules =
     data
     |> list.take_while(fn(row) { row != "" })
@@ -50,7 +50,7 @@ fn parse_data(data: List(String)) {
 }
 
 /// Does the provided list of integers satisfy all rules pairwise?
-fn rest_satisfies_all_rules(a: Int, rest: List(Int), rules: List(#(Int, Int))) {
+pub fn rest_satisfies_all_rules(a: Int, rest: List(Int), rules: List(#(Int, Int))) {
   rest
   |> list.any(fn(b) { list.contains(rules, #(a, b)) })
   |> bool.negate
@@ -59,7 +59,7 @@ fn rest_satisfies_all_rules(a: Int, rest: List(Int), rules: List(#(Int, Int))) {
 /// Empty and 1 element lists are always valid
 /// For the others, check if the first element satisfies all rules with the rest of the list (pairwise)
 /// and then check the rest of the list
-fn check_page(page: List(Int), rules: List(#(Int, Int))) {
+pub fn check_page(page: List(Int), rules: List(#(Int, Int))) {
   case page {
     [] -> True
     [_] -> True
@@ -69,7 +69,7 @@ fn check_page(page: List(Int), rules: List(#(Int, Int))) {
 }
 
 /// Given a list of pages and rules, return the pages that satisfy all rules
-fn get_valid_pages(data: List(String)) {
+pub fn get_valid_pages(data: List(String)) {
   let #(pages, rules) = parse_data(data)
 
   pages |> list.filter(fn(page) { check_page(page, rules) })
@@ -94,7 +94,7 @@ pub fn sum_middle_values(pages: List(List(Int))) {
 }
 
 // Assumes that a and b are in the list only once
-fn swap(input: List(Int), a: Int, b: Int) {
+pub fn swap(input: List(Int), a: Int, b: Int) {
   case list.contains(input, a) && list.contains(input, b) {
     False -> input
     True ->
@@ -155,4 +155,6 @@ pub fn part_2() {
 pub fn main() {
   part_2()
   |> io.debug
+
+  Nil
 }

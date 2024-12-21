@@ -165,7 +165,7 @@ pub fn defragment(blocks: Blocks) -> Blocks {
   }
 }
 
-fn sort_by_key(a: #(Int, a), b: #(Int, a)) {
+pub fn sort_by_key(a: #(Int, a), b: #(Int, a)) {
   int.compare(a.0, b.0)
 }
 
@@ -240,4 +240,6 @@ pub fn part_2() {
 
 pub fn main() {
   part_2()
+
+  Nil
 }

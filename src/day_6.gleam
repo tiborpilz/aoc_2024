@@ -185,7 +185,7 @@ pub fn check_grid_for_loop(
 }
 
 // Only generate a permutation if the obstacle's target coord is in the previously solved path
-fn should_create_permutation(
+pub fn should_create_permutation(
   grid: grid.Grid(String),
   coords: #(Int, Int),
 ) -> Bool {
@@ -240,7 +240,7 @@ pub fn get_next_guard_pos(
   }
 }
 
-fn rotate_guard_char(char: String) -> String {
+pub fn rotate_guard_char(char: String) -> String {
   case char {
     "^" -> ">"
     ">" -> "v"
@@ -251,14 +251,14 @@ fn rotate_guard_char(char: String) -> String {
   }
 }
 
-fn rotate_guard(grid: grid.Grid(String), guard: grid.Element(String)) {
+pub fn rotate_guard(grid: grid.Grid(String), guard: grid.Element(String)) {
   let #(coords, prev_char) = guard
   let next_char = rotate_guard_char(prev_char)
 
   grid.update_if_exists(grid, coords, next_char)
 }
 
-fn get_guard_trail(guard_char: String) -> String {
+pub fn get_guard_trail(guard_char: String) -> String {
   case guard_char {
     "^" -> "k"
     ">" -> "l"
@@ -269,7 +269,7 @@ fn get_guard_trail(guard_char: String) -> String {
   }
 }
 
-fn move_guard(
+pub fn move_guard(
   grid: grid.Grid(String),
   guard: grid.Element(String),
   target: #(Int, Int),
@@ -366,4 +366,6 @@ pub fn part_1() {
 
 pub fn main() {
   part_2()
+
+  Nil
 }

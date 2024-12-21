@@ -5,14 +5,14 @@ import gleam/result
 import gleam/string
 import utils.{format_sum, read_lines}
 
-fn parse_entry(entry: String) {
+pub fn parse_entry(entry: String) {
   entry
   |> string.trim
   |> int.base_parse(10)
   |> result.unwrap(0)
 }
 
-fn parse_row(line: String) {
+pub fn parse_row(line: String) {
   line
   |> string.split("  ")
   |> list.map(parse_entry)
