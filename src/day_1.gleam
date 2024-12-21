@@ -39,6 +39,42 @@ pub fn get_data() {
   #(left, right)
 }
 
+pub fn get_data_inline() {
+  let left = [3, 4, 2, 1, 3, 3]
+  let right = [4, 3, 5, 3, 9, 3]
+
+  #(left, right)
+}
+
+pub fn part_1_inline() {
+  let #(left, right) = get_data_inline()
+
+  let distances =
+    list.zip(list.sort(left, int.compare), list.sort(right, int.compare))
+    |> list.map(fn(tuple) {
+      let #(a, b) = tuple
+      int.absolute_value(a - b)
+    })
+
+  utils.sum(distances)
+}
+
+pub fn part_2_inline() {
+  let #(left, right) = get_data_inline()
+
+  let similarity =
+    left
+    |> list.map(fn(n) {
+      right
+      |> list.filter(fn(m) { n == m })
+      |> list.length
+      |> int.multiply(n)
+    })
+    |> list.filter(fn(n) { n > 0 })
+
+  utils.sum(similarity)
+}
+
 pub fn part_1() {
   let #(left, right) = get_data()
   let distances =

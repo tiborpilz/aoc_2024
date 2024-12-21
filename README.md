@@ -1,21 +1,45 @@
-[![github actions](https://github.com/tiborpilz/aoc_2024/actions/workflows/test.yml/badge.svg)](https://github.com/tiborpilz/aoc_2024/actions/workflows/test.yml)
-
 # aoc_2024
 
-Solutions for Advent of Code 2024 in Gleam.
+This template should help get you started developing with Vue 3 in Vite.
 
-Documentation: [https://tiborpilz.github.io/aoc_2024/](https://tiborpilz.github.io/aoc_2024/)
+## Recommended IDE Setup
 
-## Usage:
+[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+
+## Type Support for `.vue` Imports in TS
+
+TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+
+## Customize configuration
+
+See [Vite Configuration Reference](https://vite.dev/config/).
+
+## Project Setup
 
 ```sh
-gleam run day_5 # Run the solution for day 5
+bun install
 ```
 
-## Details
+### Compile and Hot-Reload for Development
 
-Each day's solution is implemented in a seperate module, e.g. `day_1`: [day_1](./src/day_1.gleam)
+```sh
+bun dev
+```
 
-To help with some solutions, this project uses a shared `grid` module, see: [grid](./grid.html)
+### Type-Check, Compile and Minify for Production
 
-Additionally, some shared functionality is implemented in the `utils` module, see: [utils](./utils.html)
+```sh
+bun run build
+```
+
+### Run Unit Tests with [Vitest](https://vitest.dev/)
+
+```sh
+bun test:unit
+```
+
+### Lint with [ESLint](https://eslint.org/)
+
+```sh
+bun lint
+```
