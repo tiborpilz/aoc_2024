@@ -1,3 +1,4 @@
+import gleam/set
 import gleam/option
 import gleam/int
 import gleam/list
@@ -145,8 +146,152 @@ pub fn get_step_cost(current_direction: Direction, next_direction: Direction) ->
   }
 }
 
-/// Given a map with start and end, recursively find all possible paths from start to end and score them
-/// by the amount of right turns (+1000 Points) and steps (+1 Point)
+pub fn debug_result(result_tuple: #(List(#(Int, Path)), grid.Grid(List(#(Int, Path))))) {
+  let #(paths, known_paths) = result_tuple
+  io.debug("Paths:")
+  paths
+  |> list.length
+
+  io.debug("Known Paths:")
+  known_paths
+  |> dict.size
+
+  result_tuple
+}
+
+pub fn get_scores_memoized(
+  map: Map,
+  current_position: grid.Position,
+  current_direction: Direction,
+  current_path: List(grid.Position),
+  current_score: Int,
+  scores: List(Int),
+  already_checked: grid.Grid(Bool),
+  target_position: grid.Position,
+  known_scores: grid.Grid(List(Int))
+) -> #(List(Int), grid.Grid(List(Int))) {
+  io.debug("Current Position: " <> grid.position_to_string(current_position))
+  print_path(current_path, map)
+  io.debug(dict.size(known_scores))
+
+  case dict.get(known_scores, current_position) {
+    Ok(result) -> #(result, known_scores)
+    _ -> case dict.get(already_checked, current_position) {
+      Ok(True) -> #(scores, known_scores)
+      _ -> case current_position == target_position {
+        True -> #([current_score |> io.debug, ..scores], known_scores)
+        False -> {
+          let possible_steps = get_possible_steps(map, current_position)
+          |> list.sort(fn (a, b) {
+            let #(_, direction_a) = a
+            let #(_, direction_b) = b
+            let step_cost_a = get_step_cost(current_direction, direction_a)
+            let step_cost_b = get_step_cost(current_direction, direction_b)
+
+            let estimated_score_a = step_cost_a
+            let estimated_score_b = step_cost_b
+            int.compare(estimated_score_a, estimated_score_b)
+          }) // A Star babyyy
+
+          list.fold(possible_steps, #(scores, known_scores), fn (acc, curr) {
+            let #(position, direction) = curr
+            let new_score = get_step_cost(current_direction, direction)
+            let #(new_scores_acc, known_scores_acc) = acc
+
+            let #(new_scores, new_known_scores) = get_scores_memoized(
+              map,
+              position,
+              direction,
+              [current_position, ..current_path],
+              current_score + new_score,
+              new_scores_acc,
+              dict.insert(already_checked, current_position, True),
+              target_position,
+              known_scores
+            )
+
+            let updated_known_paths = case new_scores
+            |> list.sort(fn (a, b) { int.compare(a, b) })
+            |> list.first {
+              Ok(result) -> dict.insert(new_known_scores, position, [result])
+              _ -> new_known_scores
+            }
+
+            #(list.append(new_scores, new_scores_acc), updated_known_paths)
+          })
+        }
+      }
+    }
+  }
+}
+
+pub fn get_scores(
+  map: Map,
+  current_position: grid.Position,
+  current_direction: Direction,
+  current_path: Path,
+  current_score: Int,
+  scores: List(Int),
+  already_checked: grid.Grid(Bool),
+  target_position: grid.Position,
+  counter: Int,
+) -> List(Int) {
+  case counter % 100 {
+    0 -> {
+      print_path(current_path, map)
+      io.print(
+        "Current Position: " <> grid.position_to_string(current_position)
+          <> "Current path length: " <> current_path |> list.length |> int.to_string
+      )
+      io.print("\r")
+      io.print("\r")
+      ""
+    }
+    _ -> ""
+  }
+
+  case dict.get(already_checked, current_position) {
+    Ok(True) -> scores
+    _ -> case current_position == target_position {
+      True -> [current_score |> io.debug, ..scores]
+      False -> {
+        let possible_steps = get_possible_steps(map, current_position)
+        |> list.sort(fn (a, b) {
+          let #(pos_a, direction_a) = a
+          let #(pos_b, direction_b) = b
+          let step_cost_a = get_step_cost(current_direction, direction_a)
+          let step_cost_b = get_step_cost(current_direction, direction_b)
+
+          let estimated_score_a = step_cost_a + heuristic_score(pos_a, target_position)
+          let estimated_score_b = step_cost_b + heuristic_score(pos_b, target_position)
+          int.compare(estimated_score_a, estimated_score_b)
+        }) // A Star babyyy
+
+        possible_steps
+        |> list.map(fn (pair) {
+          let #(position, direction) = pair
+          let new_score = get_step_cost(current_direction, direction)
+          let new_path = [current_position, ..current_path]
+
+          get_scores(
+            map,
+            position,
+            direction,
+            new_path,
+            current_score + new_score,
+            scores,
+            dict.insert(already_checked, current_position, True),
+            target_position,
+            counter + 1,
+          )
+        })
+        |> list.flatten
+      }
+    }
+  }
+}
+
+
 pub fn get_paths(
   map: Map,
   current_position: grid.Position,
@@ -155,55 +300,35 @@ pub fn get_paths(
   current_score: Int,
   paths: List(#(Int, Path)),
   already_checked: grid.Grid(Bool),
-  target_position: grid.Position,
-  known_paths: grid.Grid(List(#(Int, Path)))
-) -> #(List(#(Int, Path)), grid.Grid(List(#(Int, Path)))) {
-  dict.size(known_paths) |> io.debug
-  case dict.get(known_paths, current_position) {
-    Ok(result) -> #(result, known_paths)
-    _ -> case dict.get(already_checked, current_position) {
-      Ok(True) -> #(paths, known_paths)
-      _ -> case current_position == target_position {
-        True -> #(
-          [#(current_score |> io.debug, [current_position, ..current_path] |> print_path(map)), ..paths],
-          known_paths
+  target_position: grid.Position
+) -> List(#(Int, Path)) {
+  let checked = dict.get(already_checked, current_position)
+  let is_target = current_position == target_position
+
+  case checked, is_target {
+    Ok(True), _ -> paths
+    _, True -> [#(current_score |> io.debug, [current_position, ..current_path]), ..paths]
+    _, _ -> {
+      let possible_steps = get_possible_steps(map, current_position)
+      |> list.sort(fn (a, b) { // A* babyyy
+        int.compare(get_step_cost(current_direction, a.1), get_step_cost(current_direction, b.1))
+      })
+
+      possible_steps
+      |> list.map(fn (pair) {
+        let #(position, direction) = pair
+        get_paths(
+          map,
+          position,
+          direction,
+          [current_position, ..current_path],
+          current_score + get_step_cost(current_direction, direction),
+          paths,
+          dict.insert(already_checked, current_position, True),
+          target_position
         )
-        False -> {
-        let possible_steps = get_possible_steps(map, current_position)
-        |> list.sort(fn (a, b) {
-          let #(_, direction_a) = a
-          let #(_, direction_b) = b
-          let step_cost_a = get_step_cost(current_direction, direction_a)
-          let step_cost_b = get_step_cost(current_direction, direction_b)
-
-          let estimated_score_a = step_cost_a
-          let estimated_score_b = step_cost_b
-          int.compare(estimated_score_a, estimated_score_b)
-        }) // A Star babyyy
-
-        let #(new_paths, new_known_paths) = possible_steps
-        |> list.fold(#(paths, known_paths), fn (acc, curr) {
-          let #(position, direction) = curr
-          let new_score = get_step_cost(current_direction, direction)
-          let #(new_paths_acc, known_paths_acc) = acc
-          let #(new_paths, new_known_paths) = get_paths(
-            map,
-            position,
-            direction,
-            [current_position, ..current_path],
-            current_score + new_score,
-            new_paths_acc,
-            dict.insert(already_checked, current_position, True),
-            target_position,
-            known_paths_acc
-          )
-
-          #(list.append(new_paths, new_paths_acc), dict.insert(new_known_paths, position, new_paths))
-        })
-
-        #(list.append(paths, new_paths), new_known_paths)
-        }
-      }
+      })
+      |> list.flatten
     }
   }
 }
@@ -226,7 +351,7 @@ pub fn main() {
   let start_position = get_start_position(map)
   let end_position = get_end_position(map)
 
-  let #(paths, _) = get_paths(
+  let scores = get_paths(
     map,
     start_position,
     None,
@@ -235,10 +360,9 @@ pub fn main() {
     [],
     dict.new(),
     end_position,
-    dict.new()
   )
 
-  let assert Ok(#(best_score, best_path), ) = paths
+  let assert Ok(best_score) = scores
   |> list.sort(fn (a, b) {
     let #(score_a, _) = a
     let #(score_b, _) = b
@@ -247,7 +371,7 @@ pub fn main() {
   |> list.first
 
   io.debug(best_score)
-  print_path(best_path, map)
+  // print_path(best_path, map)
   // |> list.map(fn (pair) {
   //   let #(score, path) = pair
   //   io.debug("Score: " <> int.to_string(score))

@@ -65,6 +65,13 @@ pub fn size(grid: Grid(a)) -> Position {
 }
 
 ///
+/// Transforms a given position to string (for debug purposes)
+pub fn position_to_string(position: Position) -> String {
+  let #(y, x) = position
+  "y: " <> utils.to_string(y) <> ", x: " <> utils.to_string(x)
+}
+
+///
 /// Gets the row of a given index as a list
 pub fn get_row(grid: Grid(a), index: Int) -> Result(List(a), Nil) {
   let #(_, width) = size(grid)
@@ -170,7 +177,6 @@ pub fn pretty_print(grid: Grid(String)) {
 
   grid
 }
-
 
 pub fn debug_column() {
   [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
