@@ -1,13 +1,4 @@
 //// Solutions for Advent of Code 2024
-//// https://adventofcode.com/2024
-//// Usage: `gleam run <day>` - i.e. `gleam run day_1`
-////
-//// Each day's solution is implemented in a seperate module, e.g. `day_1`.
-////
-//// To help with some solutions, this project uses a shared `grid` module, see:
-//// [grid](./grid.html)
-//// Additionally, some shared functionality is implemented in the `utils` module, see:
-//// [utils](./utils.html)
 
 import gleam/list
 import argv

@@ -1,22 +1,29 @@
+//// The grid module provides a two-dimensional data structure.
+//// It is implemented as a dictionary with the keys being the
+//// a tuple of i,j indices of the elements.
+
 import gleam/dict
 import gleam/io
 import gleam/list
 import gleam/result
 import utils
 
-/// y, x coordinates
+/// A position is given as a tuple of coordinates: (y, x)
 pub type Position =
   #(Int, Int)
 
+/// A grid is a dictionary with the keys being the a tuple of y,x coordinates of the elements.
 pub type Grid(a) =
   dict.Dict(Position, a)
 
+/// A single element value together with its position.
 pub type Element(a) =
   #(Position, a)
 
 ///
 /// Takes a m⨯n list of lists and returns a Grid - which is a dictionary with the keys being the
 /// a tuple of i,j indices of the elements.
+
 pub fn from_lists(lists: List(List(a))) -> dict.Dict(Position, a) {
   lists
   |> list.index_fold(dict.new(), fn(acc_row, curr_row, index_row) {
@@ -183,16 +190,4 @@ pub fn pretty_print(grid: Grid(String)) {
   io.debug("---------------------------------")
 
   grid
-}
-
-pub fn debug_column() {
-  [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-  |> from_lists
-  |> get_column(1)
-  |> result.unwrap([])
-  |> io.debug
-}
-
-pub fn main() {
-  debug_column()
 }
