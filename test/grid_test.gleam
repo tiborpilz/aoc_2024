@@ -29,11 +29,7 @@ pub fn from_lists_test() {
 }
 
 pub fn to_row_list_indexed_test() {
-  let example_grid = grid.from_lists([
-    [1,2,3],
-    [4,5,6],
-    [7,8,9],
-  ])
+  let example_grid = grid.from_lists([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 
   let expected = [
     [#(#(0, 0), 1), #(#(0, 1), 2), #(#(0, 2), 3)],
@@ -47,11 +43,7 @@ pub fn to_row_list_indexed_test() {
 }
 
 pub fn to_col_list_indexed_test() {
-  let example_grid = grid.from_lists([
-    [1,2,3],
-    [4,5,6],
-    [7,8,9],
-  ])
+  let example_grid = grid.from_lists([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 
   let expected = [
     [#(#(0, 0), 1), #(#(1, 0), 4), #(#(2, 0), 7)],

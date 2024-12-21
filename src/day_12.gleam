@@ -32,13 +32,13 @@ fn get_adjacent_cells(pos: #(Int, Int)) {
 fn get_surrounding_cells(pos: #(Int, Int)) {
   let #(y, x) = pos
 
-  list.range(-1,1)
-  |> list.map(fn (y_offset) {
+  list.range(-1, 1)
+  |> list.map(fn(y_offset) {
     list.range(-1, 1)
-    |> list.map(fn (x_offset) { #(y + y_offset, x + x_offset) })
+    |> list.map(fn(x_offset) { #(y + y_offset, x + x_offset) })
   })
   |> list.flatten
-  |> list.filter(fn (cell) { cell != #(0, 0) })
+  |> list.filter(fn(cell) { cell != #(0, 0) })
 }
 
 /// Get adjacent cells with the same value

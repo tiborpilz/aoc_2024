@@ -22,7 +22,7 @@ pub fn read_lines(filepath: String) {
 pub fn read_chars(filepath: String) -> List(List(String)) {
   filepath
   |> read_lines
-  |> list.map(fn (row) { string.split(row, "") })
+  |> list.map(fn(row) { string.split(row, "") })
 }
 
 pub fn parse_entry(entry: String) -> Int {

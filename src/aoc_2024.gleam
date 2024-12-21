@@ -1,7 +1,7 @@
-import glint
 import argv
 import day_1
 import day_2
+import glint
 
 fn day_1_cmd() -> glint.Command(Nil) {
   use <- glint.command_help("Executes the first day's exercise.")

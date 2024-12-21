@@ -2,7 +2,6 @@
 ////
 //// Since numbers don't have to be in an ordering rule, use the negation, so "a|b"
 //// results in a rule #(b, a), which, if violated, fails the check.
-
 //// To check for a list [a,b,c,d] check the ordering for
 //// #(a, [b,c,d]), #(b, [c,d]) and #(c, [d])
 

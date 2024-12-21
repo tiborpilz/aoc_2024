@@ -97,10 +97,17 @@ fn parse_prize(line: String, prize_offset: Int) -> Result(Position, Nil) {
 }
 
 /// Parse a block containing three lines ('Button A:', 'Button B:' & Prize:)
-fn parse_block(block: List(String), prize_offset: Int) -> Result(ClawMachine, Nil) {
+fn parse_block(
+  block: List(String),
+  prize_offset: Int,
+) -> Result(ClawMachine, Nil) {
   case block {
     [line_a, line_b, line_prize] ->
-      case parse_button(line_a), parse_button(line_b), parse_prize(line_prize, prize_offset) {
+      case
+        parse_button(line_a),
+        parse_button(line_b),
+        parse_prize(line_prize, prize_offset)
+      {
         Ok(a), Ok(b), Ok(prize) -> Ok(ClawMachine(a, b, prize))
         _, _, _ -> Error(Nil)
       }
@@ -116,7 +123,11 @@ fn parse_input(
 ) -> List(Result(ClawMachine, Nil)) {
   case lines {
     [a, b, prize, "", ..rest] ->
-      parse_input(rest, [parse_block([a, b, prize], prize_offset), ..result], prize_offset)
+      parse_input(
+        rest,
+        [parse_block([a, b, prize], prize_offset), ..result],
+        prize_offset,
+      )
     [a, b, prize] -> [parse_block([a, b, prize], prize_offset), ..result]
     _ -> result
   }
@@ -159,7 +170,7 @@ pub fn part_1() {
 }
 
 pub fn part_2() {
-  get_data(10000000000000)
+  get_data(10_000_000_000_000)
   |> list.map(solve_machine)
   |> utils.sum
 }

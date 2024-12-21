@@ -5,7 +5,8 @@ import gleam/result
 import utils
 
 /// y, x coordinates
-pub type Position = #(Int, Int)
+pub type Position =
+  #(Int, Int)
 
 pub type Grid(a) =
   dict.Dict(Position, a)
@@ -109,9 +110,9 @@ pub fn to_row_list_indexed(grid: Grid(a)) -> List(List(#(Position, a))) {
   let #(height, width) = size(grid)
 
   list.range(0, height - 1)
-  |> list.map(fn (row_index) {
+  |> list.map(fn(row_index) {
     list.range(0, width - 1)
-    |> list.map (fn (col_index) {
+    |> list.map(fn(col_index) {
       let assert Ok(element) = dict.get(grid, #(row_index, col_index))
       #(#(row_index, col_index), element)
     })
@@ -124,9 +125,9 @@ pub fn to_col_list_indexed(grid: Grid(a)) -> List(List(#(Position, a))) {
   let #(height, width) = size(grid)
 
   list.range(0, width - 1)
-  |> list.map(fn (col_index) {
+  |> list.map(fn(col_index) {
     list.range(0, height - 1)
-    |> list.map (fn (row_index) {
+    |> list.map(fn(row_index) {
       let assert Ok(element) = dict.get(grid, #(row_index, col_index))
       #(#(row_index, col_index), element)
     })
@@ -135,7 +136,10 @@ pub fn to_col_list_indexed(grid: Grid(a)) -> List(List(#(Position, a))) {
 
 ///
 /// Gets the column of a given index as a list of tuples of indices value
-pub fn get_indexed_column(grid: Grid(a), index: Int) -> Result(List(#(Position, a)), Nil) {
+pub fn get_indexed_column(
+  grid: Grid(a),
+  index: Int,
+) -> Result(List(#(Position, a)), Nil) {
   let #(height, _) = size(grid)
 
   list.range(0, height - 1)
@@ -155,7 +159,10 @@ pub fn get_indexed_column(grid: Grid(a), index: Int) -> Result(List(#(Position, 
 
 ///
 /// Gets the row of a given index as a list of tuples of indices and values
-pub fn get_indexed_row(grid: Grid(a), index: Int) -> Result(List(#(Position, a)), Nil) {
+pub fn get_indexed_row(
+  grid: Grid(a),
+  index: Int,
+) -> Result(List(#(Position, a)), Nil) {
   let #(_, width) = size(grid)
 
   list.range(0, width - 1)
