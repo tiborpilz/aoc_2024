@@ -5,7 +5,6 @@
 //// and replace that with an empty string, as we don't want to consider those blocks.
 //// This leaves us with the same problem as part 1, which means we can reuse the same function.
 
-
 import gleam/int
 import gleam/list
 import gleam/option

@@ -7,7 +7,6 @@
 //// For part 2, we take each element of the left list and sort the right list by the
 //// distance to calculate a per-element similarity (which can then be summed again).
 
-
 import gleam/int
 import gleam/io
 import gleam/list
