@@ -156,47 +156,54 @@ pub fn get_paths(
   paths: List(#(Int, Path)),
   already_checked: grid.Grid(Bool),
   target_position: grid.Position,
-  known_paths: grid.Grid(List(grid.Position))
-) -> #(List(#(Int, Path)), grid.Grid(Int)) {
-  case dict.get(already_checked, current_position) {
-    Ok(True) -> #(paths, known_paths)
-    _ -> case current_position == target_position {
-      True -> #(
-        [#(current_score |> io.debug, [current_position, ..current_path] |> print_path(map)), ..paths],
-        known_paths
-      )
-      False -> #(list.append(
-        get_possible_steps(map, current_position)
-          |> list.sort(fn (a, b) {
-            let #(position_a, direction_a) = a
-            let #(position_b, direction_b) = b
-            let step_cost_a = get_step_cost(current_direction, direction_a)
-            let step_cost_b = get_step_cost(current_direction, direction_b)
+  known_paths: grid.Grid(List(#(Int, Path)))
+) -> #(List(#(Int, Path)), grid.Grid(List(#(Int, Path)))) {
+  dict.size(known_paths) |> io.debug
+  case dict.get(known_paths, current_position) {
+    Ok(result) -> #(result, known_paths)
+    _ -> case dict.get(already_checked, current_position) {
+      Ok(True) -> #(paths, known_paths)
+      _ -> case current_position == target_position {
+        True -> #(
+          [#(current_score |> io.debug, [current_position, ..current_path] |> print_path(map)), ..paths],
+          known_paths
+        )
+        False -> {
+        let possible_steps = get_possible_steps(map, current_position)
+        |> list.sort(fn (a, b) {
+          let #(_, direction_a) = a
+          let #(_, direction_b) = b
+          let step_cost_a = get_step_cost(current_direction, direction_a)
+          let step_cost_b = get_step_cost(current_direction, direction_b)
 
-            let estimated_score_a = step_cost_a
-            let estimated_score_b = step_cost_b
-            int.compare(estimated_score_a, estimated_score_b)
-          })
-          |> list.map(fn (pair) {
-            let #(position, direction) = pair
-            let new_score = get_step_cost(current_direction, direction)
-            let paths = get_paths(
-              map,
-              position,
-              direction,
-              [current_position, ..current_path],
-              current_score + new_score,
-              paths,
-              dict.insert(already_checked, current_position, True),
-              target_position,
-              known_paths
-            ).0
-          })
-          |> list.flatten,
-        paths
-      ),
-        known_paths
-      )
+          let estimated_score_a = step_cost_a
+          let estimated_score_b = step_cost_b
+          int.compare(estimated_score_a, estimated_score_b)
+        }) // A Star babyyy
+
+        let #(new_paths, new_known_paths) = possible_steps
+        |> list.fold(#(paths, known_paths), fn (acc, curr) {
+          let #(position, direction) = curr
+          let new_score = get_step_cost(current_direction, direction)
+          let #(new_paths_acc, known_paths_acc) = acc
+          let #(new_paths, new_known_paths) = get_paths(
+            map,
+            position,
+            direction,
+            [current_position, ..current_path],
+            current_score + new_score,
+            new_paths_acc,
+            dict.insert(already_checked, current_position, True),
+            target_position,
+            known_paths_acc
+          )
+
+          #(list.append(new_paths, new_paths_acc), dict.insert(new_known_paths, position, new_paths))
+        })
+
+        #(list.append(paths, new_paths), new_known_paths)
+        }
+      }
     }
   }
 }

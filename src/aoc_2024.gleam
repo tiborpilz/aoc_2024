@@ -16,6 +16,13 @@ fn day_2_cmd() -> glint.Command(Nil) {
 }
 
 pub fn main() {
+  case 1 == 2 {
+    False -> "No"
+    True -> {
+      let x = "what"
+      x
+    }
+  }
   // TODO: Make this work
   glint.new()
   |> glint.with_name("Advent of Code 2024")
