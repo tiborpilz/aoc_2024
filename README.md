@@ -1,6 +1,10 @@
+[![github actions](https://github.com/tiborpilz/aoc_2024/actions/workflows/test.yml/badge.svg)](https://github.com/tiborpilz/aoc_2024/actions/workflows/test.yml)
+
 # aoc_2024
 
 Solutions for Advent of Code 2024 in Gleam.
+
+Documentation: [https://tiborpilz.github.io/aoc_2024/](https://tiborpilz.github.io/aoc_2024/)
 
 ## Usage:
 
