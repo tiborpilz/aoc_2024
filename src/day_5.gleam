@@ -50,7 +50,11 @@ pub fn parse_data(data: List(String)) {
 }
 
 /// Does the provided list of integers satisfy all rules pairwise?
-pub fn rest_satisfies_all_rules(a: Int, rest: List(Int), rules: List(#(Int, Int))) {
+pub fn rest_satisfies_all_rules(
+  a: Int,
+  rest: List(Int),
+  rules: List(#(Int, Int)),
+) {
   rest
   |> list.any(fn(b) { list.contains(rules, #(a, b)) })
   |> bool.negate

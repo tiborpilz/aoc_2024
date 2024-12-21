@@ -51,7 +51,10 @@ pub type ClawMachine {
 }
 
 /// Parse two strings into a positon
-pub fn strings_to_position(raw_x: String, raw_y: String) -> Result(Position, Nil) {
+pub fn strings_to_position(
+  raw_x: String,
+  raw_y: String,
+) -> Result(Position, Nil) {
   use x <- result.try(int.parse(raw_x))
   use y <- result.try(int.parse(raw_y))
 

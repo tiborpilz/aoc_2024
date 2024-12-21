@@ -137,7 +137,10 @@ pub fn get_boxes_to_move(path: List(#(#(Int, Int), MapTile))) {
   }
 }
 
-pub fn get_new_position(position: #(Int, Int), direction: Direction) -> #(Int, Int) {
+pub fn get_new_position(
+  position: #(Int, Int),
+  direction: Direction,
+) -> #(Int, Int) {
   let #(y, x) = position
   case direction {
     Up -> #(y - 1, x)

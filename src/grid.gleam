@@ -23,7 +23,6 @@ pub type Element(a) =
 ///
 /// Takes a m⨯n list of lists and returns a Grid - which is a dictionary with the keys being the
 /// a tuple of i,j indices of the elements.
-
 pub fn from_lists(lists: List(List(a))) -> dict.Dict(Position, a) {
   lists
   |> list.index_fold(dict.new(), fn(acc_row, curr_row, index_row) {

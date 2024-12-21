@@ -151,7 +151,10 @@ pub fn is_border_cell(grid: grid.Grid(String), cell: #(Int, Int)) {
   list.length(get_same_surrounding(grid, cell)) < 8
 }
 
-pub fn find_first_border_cell(grid: grid.Grid(String), region: List(#(Int, Int))) {
+pub fn find_first_border_cell(
+  grid: grid.Grid(String),
+  region: List(#(Int, Int)),
+) {
   let assert Ok(cell) =
     list.find(region, fn(cell) { is_border_cell(grid, cell) })
   cell
