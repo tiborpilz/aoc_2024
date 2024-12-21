@@ -1,4 +1,4 @@
-name: test
+name: pages
 
 on:
   push:
@@ -27,6 +27,9 @@ jobs:
           path: build/dev/docs/aoc_2024/
 
   deploy-pages:
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
