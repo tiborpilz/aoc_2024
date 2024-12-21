@@ -18,6 +18,13 @@ pub fn read_lines(filepath: String) {
   |> string.split("\n")
 }
 
+/// Reads a file line by line and splits the rows into individual characters
+pub fn read_chars(filepath: String) -> List(List(String)) {
+  filepath
+  |> read_lines
+  |> list.map(fn (row) { string.split(row, "") })
+}
+
 pub fn parse_entry(entry: String) -> Int {
   entry
   |> string.trim

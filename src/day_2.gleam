@@ -6,7 +6,6 @@
 //// This way, we're checking the list twice, but hey, what's a factor of two between friends?
 
 import gleam/int
-import gleam/io
 import gleam/list
 import utils
 

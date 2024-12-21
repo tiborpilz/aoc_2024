@@ -109,7 +109,7 @@ pub fn print_robots(robots: List(Robot), space: Space, seconds: Int) {
 
   io.debug("Seconds: " <> int.to_string(seconds))
 
-  let grid_with_robots = list.fold(robots, grid, fn (acc, curr) {
+  list.fold(robots, grid, fn (acc, curr) {
     let Robot(pos: Vec2(x,y), vel: _) = curr
     let num_robots_here = case dict.get(acc, #(y, x)) {
       Ok(val) -> result.unwrap(int.parse(val), 0)
@@ -118,18 +118,8 @@ pub fn print_robots(robots: List(Robot), space: Space, seconds: Int) {
 
     dict.insert(acc, #(y, x), int.to_string(num_robots_here + 1))
   })
-
-  // let grid_with_quadrant_y = list.fold(list.range(0, space.width - 1), grid_with_robots, fn (acc, curr) {
-  //   let mid_height = space.height / 2
-  //   dict.insert(acc, #(mid_height, curr), " ")
-  // })
-  // let grid_with_quadrant_x = list.fold(list.range(0, space.height - 1), grid_with_quadrant_y, fn (acc, curr) {
-  //   let mid_width = space.width / 2
-  //   dict.insert(acc, #(curr, mid_width), " ")
-  // })
   |> grid.to_lists
   |> list.map(fn(row) { io.debug(utils.join(row)) })
-
 
   robots
 }
@@ -142,7 +132,7 @@ pub fn print_quadrants(quadrants: List(List(Robot)), space: Space, seconds: Int)
 }
 
 pub fn highest_row_count(robots: List(Robot)) {
-  let highest_row_count = robots
+  robots
   |> list.group(fn (robot) {
     robot.pos.y
   })

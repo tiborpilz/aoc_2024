@@ -6,20 +6,6 @@ import gleam/string
 import grid
 import utils
 
-type GlobalDirections {
-  North
-  East
-  South
-  West
-}
-
-type LocalDirections {
-  Forward
-  Left
-  Right
-  Backward
-}
-
 /// Get the adjacent cells
 ///
 /// oAo
@@ -83,7 +69,7 @@ fn get_same_surrounding(grid: grid.Grid(String), cell: #(Int, Int)) {
 /// Note that this assumes contiguousness.
 /// Each cell adds a value based on the number of neighbors it has
 /// that are in the region. 4 neighbors -> 0 circumference, 3 neighbors -> 1, etc.
-fn get_circumference(grid: grid.Grid(String), region: List(#(Int, Int))) {
+pub fn get_circumference(grid: grid.Grid(String), region: List(#(Int, Int))) {
   region
   |> list.fold(0, fn(sum, cell) {
     let assert Ok(cell_value) = dict.get(grid, cell)
