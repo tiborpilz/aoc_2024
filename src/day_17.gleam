@@ -1,5 +1,6 @@
 import gleam_community/ansi
 import gleam/list
+import gleam/yielder
 import gleam/int
 import gleam/string
 import gleam/erlang
@@ -20,6 +21,15 @@ pub type Computer {
     output: List(Int),
     pointer: Int,
   )
+}
+
+pub fn get_raw_program(computer: Computer) -> List(Int) {
+  computer.program
+  |> list.map(fn (pair) {
+    let #(opcode, operand) = pair
+    [opcode, operand]
+  })
+  |> list.flatten
 }
 
 pub fn parse_input(input: List(String)) -> Computer {
@@ -251,9 +261,9 @@ pub fn cdv(state: Computer) -> Computer {
 }
 
 pub fn execute_instruction(state: Computer) -> Computer {
-  debug_program(state)
+  // debug_state(state)
 
-  let _ = erlang.get_line("Continue...")
+  // let _ = erlang.get_line("Continue...")
 
   let #(opcode, _, _) = get_current_instruction(state)
 
@@ -274,6 +284,39 @@ pub fn execute_program(state: Computer) -> Computer {
   case state.pointer, list.length(state.program) {
     pointer, program_length, if pointer >= program_length -> state
     _, _ -> state |> execute_instruction |> execute_program
+  }
+}
+
+/// Returns true if the first list is a prefix of the second list.
+pub fn list_matches_up_to(list1: List(Int), list2: List(Int)) -> Bool {
+  case list1, list2 {
+    [], _ -> True
+    _, [] -> False
+    [x, ..xs], [y, ..ys] if x == y -> list_matches_up_to(xs, ys)
+    _, _ -> False
+  }
+}
+
+/// Returns true if the first list is a suffix of the second list.
+pub fn list_matches_from_end(list1: List(Int), list2: List(Int)) -> Bool {
+  list_matches_up_to(list1 |> list.reverse, list2 |> list.reverse)
+}
+
+pub fn evaluate_program(state: Computer, expected_output: List(Int)) -> Result(Computer, Computer) {
+  let proceed = fn () {
+    state |> execute_instruction |> evaluate_program(expected_output)
+  }
+
+  let has_reached_end = state.pointer >= list.length(state.program)
+
+  case has_reached_end, list_matches_up_to(state.output, expected_output) {
+    True, True -> case state.output == expected_output {
+      True -> Ok(state)
+      False -> Error(state)
+    }
+    True, False -> Error(state)
+    False, True -> proceed()
+    False, False -> Error(state)
   }
 }
 
@@ -334,16 +377,105 @@ pub fn format_output(state: Computer) -> String {
   |> utils.join_by(",")
 }
 
-pub fn main() {
-  let final_state = "./data/day_17.txt"
+pub fn part_1() {
+  let final_state = "./data/day_17_debug.txt"
   |> utils.read_lines
   |> parse_input
-  |> debug_state
   |> execute_program
 
   final_state
+  |> debug_state
   |> format_output
   |> io.println
+}
+
+pub fn solve_part_2(
+  state: Computer,
+  target_output: List(Int),
+  base8_prefix: Int,
+  use_last_n: Int
+) {
+  io.debug(use_last_n)
+  let current_target_output = target_output |> list.reverse |> list.take(use_last_n) |> list.reverse
+
+  io.debug(current_target_output)
+  io.debug(base8_prefix |> int.to_base8)
+
+  let result = yielder.unfold(base8_prefix, fn (n) { yielder.Next(n, n + 1) })
+  |> yielder.filter(fn (a) {
+    base8_prefix == 0 || a |> int.to_base8 |> string.starts_with(base8_prefix |> int.to_base8)
+  })
+  |> yielder.map(fn (a) {
+    let new_state = Computer(..state, a: a)
+    let final_state = new_state |> evaluate_program(current_target_output)
+
+    case final_state {
+      Ok(_) -> #(True, a)
+      _ -> #(False, a)
+    }
+  })
+  |> yielder.drop_while(fn (pair) {
+    let #(result, _) = pair
+    result == False
+  })
+  |> yielder.first
+
+  case result {
+    Ok(#(_, new_prefix)) -> solve_part_2(state, target_output, new_prefix, use_last_n + 1)
+    _ -> panic as "What"
+  }
+}
+
+pub fn part_2() {
+  let initial_state = "./data/day_17.txt"
+  |> utils.read_lines
+  |> parse_input
+
+  let initial_program = get_raw_program(initial_state)
+
+  solve_part_2(initial_state, initial_program, 0, 1)
+
+  // let initial_program = get_raw_program(initial_state)
+  // let initial_program = [4,4,0,5,3,0]
+
+  // let starts_with = 0o5605
+
+  // let assert Ok(#(_, result)) = yielder.unfold(0, fn (n) { yielder.Next(n, n + 1) })
+  // |> yielder.filter(fn (a) {
+  //   a |> int.to_base8 |> string.starts_with(starts_with |> int.to_base8)
+  // })
+  // |> yielder.map(fn (a) {
+  //   let new_state = Computer(..initial_state, a: a)
+  //   let final_state = new_state |> evaluate_program(initial_program)
+
+  //   case a % 1000000 {
+  //     0 -> {
+  //       io.debug(a)
+  //       Nil
+  //     }
+  //     _ -> Nil
+  //   }
+
+  //   case final_state {
+  //     Ok(state) -> {
+  //       io.debug(state.output)
+  //       #(True, a)
+  //     }
+  //     _ -> #(False, a)
+  //   }
+  // })
+  // |> yielder.take_while(fn (pair) {
+  //   let #(result, _) = pair
+  //   result == False
+  // })
+  // |> yielder.last
+
+  // io.println(result + 1 |> int.to_base8)
+}
+
+pub fn main() {
+  // part_1()
+  part_2()
 
   Nil
 }
