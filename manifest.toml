@@ -8,6 +8,7 @@ packages = [
   { name = "gleam_community_colour", version = "1.4.1", build_tools = ["gleam"], requirements = ["gleam_json", "gleam_stdlib"], otp_app = "gleam_community_colour", source = "hex", outer_checksum = "386CB9B01B33371538672EEA8A6375A0A0ADEF41F17C86DDCB81C92AD00DA610" },
   { name = "gleam_erlang", version = "0.32.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleam_erlang", source = "hex", outer_checksum = "B18643083A0117AC5CFD0C1AEEBE5469071895ECFA426DCC26517A07F6AD9948" },
   { name = "gleam_json", version = "2.1.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleam_json", source = "hex", outer_checksum = "0A57FB5666E695FD2BEE74C0428A98B0FC11A395D2C7B4CDF5E22C5DD32C74C6" },
+  { name = "gleam_otp", version = "0.16.0", build_tools = ["gleam"], requirements = ["gleam_erlang", "gleam_stdlib"], otp_app = "gleam_otp", source = "hex", outer_checksum = "FA0EB761339749B4E82D63016C6A18C4E6662DA05BAB6F1346F9AF2E679E301A" },
   { name = "gleam_regexp", version = "1.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleam_regexp", source = "hex", outer_checksum = "A3655FDD288571E90EE9C4009B719FEF59FA16AFCDF3952A76A125AF23CF1592" },
   { name = "gleam_stdlib", version = "0.45.0", build_tools = ["gleam"], requirements = [], otp_app = "gleam_stdlib", source = "hex", outer_checksum = "206FCE1A76974AECFC55AEBCD0217D59EDE4E408C016E2CFCCC8FF51278F186E" },
   { name = "gleam_yielder", version = "1.1.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleam_yielder", source = "hex", outer_checksum = "8E4E4ECFA7982859F430C57F549200C7749823C106759F4A19A78AEA6687717A" },
@@ -21,6 +22,7 @@ packages = [
 argv = { version = ">= 1.0.2 and < 2.0.0" }
 gleam_community_ansi = { version = ">= 1.4.2 and < 2.0.0" }
 gleam_erlang = { version = ">= 0.32.0 and < 1.0.0" }
+gleam_otp = { version = ">= 0.16.0 and < 1.0.0" }
 gleam_regexp = { version = ">= 1.0.0 and < 2.0.0" }
 gleam_stdlib = { version = ">= 0.34.0 and < 2.0.0" }
 gleeunit = { version = ">= 1.0.0 and < 2.0.0" }

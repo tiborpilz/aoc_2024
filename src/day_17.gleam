@@ -8,6 +8,7 @@ import utils
 import gleam/io
 import gleam/option.{None, Some}
 
+
 pub type Registers {
   Registers(a: Int, b: Int, c: Int)
 }
@@ -390,11 +391,27 @@ pub fn part_1() {
 }
 
 pub fn get_numbers_with_prefix(prefix: Int) {
-  yielder.unfold(prefix, fn (n) { yielder.Next(n, n + 1) })
-  |> yielder.filter(fn (a) {
-    prefix == 0 || a |> int.to_base8 |> string.starts_with(prefix |> int.to_base8)
+  yielder.unfold(prefix, fn (n) {
+    let next = n + 1
+
+    case prefix == 0 || next |> int.to_base8 |> string.starts_with(prefix |> int.to_base8) {
+      True -> yielder.Next(n, next)
+      False -> {
+        let num_digits = { n |> int.to_base8 |> string.length } + 1 - { prefix |> int.to_base8 |> string.length }
+        let start_value = prefix * utils.int_power(8, num_digits)
+        yielder.Next(n, start_value)
+      }
+    }
   })
 }
+
+// pub fn get_numbers_with_prefix(prefix: Int) {
+//   yielder.unfold(prefix, fn (n) { yielder.Next(n, n + 1) })
+//   |> yielder.filter(fn (a) {
+//     prefix == 0 || a |> int.to_base8 |> string.starts_with(prefix |> int.to_base8)
+//   })
+// }
+
 
 pub fn solve_part_2(
   state: Computer,
@@ -455,6 +472,11 @@ pub fn yield_until(max: Int) {
 
 pub fn main() {
   // part_1()
+  // get_numbers_with_prefix(0o2563)
+  // |> yielder.take(200)
+  // |> yielder.map(fn (n) { n |> int.to_base8 |> io.debug })
+  // |> yielder.to_list
+
   part_2()
 
   Nil
