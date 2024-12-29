@@ -389,6 +389,13 @@ pub fn part_1() {
   |> io.println
 }
 
+pub fn get_numbers_with_prefix(prefix: Int) {
+  yielder.unfold(prefix, fn (n) { yielder.Next(n, n + 1) })
+  |> yielder.filter(fn (a) {
+    prefix == 0 || a |> int.to_base8 |> string.starts_with(prefix |> int.to_base8)
+  })
+}
+
 pub fn solve_part_2(
   state: Computer,
   target_output: List(Int),
@@ -401,10 +408,7 @@ pub fn solve_part_2(
   io.debug(current_target_output)
   io.debug(base8_prefix |> int.to_base8)
 
-  let result = yielder.unfold(base8_prefix, fn (n) { yielder.Next(n, n + 1) })
-  |> yielder.filter(fn (a) {
-    base8_prefix == 0 || a |> int.to_base8 |> string.starts_with(base8_prefix |> int.to_base8)
-  })
+  let result = get_numbers_with_prefix(base8_prefix)
   |> yielder.map(fn (a) {
     let new_state = Computer(..state, a: a)
     let final_state = new_state |> evaluate_program(current_target_output)
@@ -418,11 +422,15 @@ pub fn solve_part_2(
     let #(result, _) = pair
     result == False
   })
+  |> yielder.filter(fn (pair) {
+    let #(result, _) = pair
+    result == True
+  })
   |> yielder.first
 
   case result {
-    Ok(#(_, new_prefix)) -> solve_part_2(state, target_output, new_prefix, use_last_n + 1)
-    _ -> panic as "What"
+    Ok(#(True, value)) -> solve_part_2(state, target_output, value, use_last_n + 1)
+    _ -> Nil
   }
 }
 
@@ -433,44 +441,16 @@ pub fn part_2() {
 
   let initial_program = get_raw_program(initial_state)
 
-  solve_part_2(initial_state, initial_program, 0, 1)
+  solve_part_2(initial_state, initial_program, 5, 2)
+}
 
-  // let initial_program = get_raw_program(initial_state)
-  // let initial_program = [4,4,0,5,3,0]
-
-  // let starts_with = 0o5605
-
-  // let assert Ok(#(_, result)) = yielder.unfold(0, fn (n) { yielder.Next(n, n + 1) })
-  // |> yielder.filter(fn (a) {
-  //   a |> int.to_base8 |> string.starts_with(starts_with |> int.to_base8)
-  // })
-  // |> yielder.map(fn (a) {
-  //   let new_state = Computer(..initial_state, a: a)
-  //   let final_state = new_state |> evaluate_program(initial_program)
-
-  //   case a % 1000000 {
-  //     0 -> {
-  //       io.debug(a)
-  //       Nil
-  //     }
-  //     _ -> Nil
-  //   }
-
-  //   case final_state {
-  //     Ok(state) -> {
-  //       io.debug(state.output)
-  //       #(True, a)
-  //     }
-  //     _ -> #(False, a)
-  //   }
-  // })
-  // |> yielder.take_while(fn (pair) {
-  //   let #(result, _) = pair
-  //   result == False
-  // })
-  // |> yielder.last
-
-  // io.println(result + 1 |> int.to_base8)
+pub fn yield_until(max: Int) {
+  yielder.unfold(0, fn (n) {
+    case n < max {
+      True -> yielder.Next(n, n + 1)
+      False -> yielder.Done
+    }
+  })
 }
 
 pub fn main() {
