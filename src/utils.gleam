@@ -3,6 +3,7 @@ import gleam/io
 import gleam/list
 import gleam/result
 import gleam/string
+import gleam/float
 import simplifile
 
 pub fn read(filepath: String) {
@@ -69,6 +70,16 @@ pub fn join(chars: List(String)) {
   |> list.fold("", fn(acc, char) { acc <> char })
 }
 
+pub fn join_by(chars: List(String), by: String) {
+  chars
+  |> list.index_fold("", fn(acc, char, index) {
+    case index {
+      0 -> acc <> char
+      _ -> acc <> by <> char
+    }
+  })
+}
+
 /// Gets the entry of a 1D-List at a given index
 pub fn at(data: List(a), index: Int) {
   data |> list.take(index + 1) |> list.last
@@ -87,6 +98,13 @@ pub fn split_by_empty_row(input: List(String)) -> List(List(String)) {
     }
   })
   |> list.reverse
+}
+
+/// Raises one integer to another integer. (The stdlib only has `power(int, float)`)
+pub fn int_power(base: Int, exponent: Int) -> Int {
+  let float_exponent = int.to_float(exponent)
+  let assert Ok(float_result) = int.power(base, float_exponent)
+  float.truncate(float_result)
 }
 
 pub fn main() {

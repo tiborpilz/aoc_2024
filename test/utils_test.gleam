@@ -15,3 +15,9 @@ pub fn split_by_empty_row_test() {
   |> utils.split_by_empty_row
   |> should.equal(expected)
 }
+
+pub fn int_power_test() {
+  utils.int_power(2,4) |> should.equal(16)
+  utils.int_power(2,3) |> should.equal(8)
+  utils.int_power(3,3) |> should.equal(27)
+}
