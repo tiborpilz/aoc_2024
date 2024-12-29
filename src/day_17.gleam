@@ -1,3 +1,4 @@
+import gleam/result
 import gleam_community/ansi
 import gleam/list
 import gleam/yielder
@@ -298,26 +299,40 @@ pub fn list_matches_up_to(list1: List(Int), list2: List(Int)) -> Bool {
   }
 }
 
+/// Returns true if either list is a prefix of the other list.
+pub fn list_matches(list1: List(Int), list2: List(Int)) -> Bool {
+  case list1, list2 {
+    [], _ -> True
+    _, [] -> True
+    [x, ..xs], [y, ..ys] if x == y -> list_matches(xs, ys)
+    _, _ -> False
+  }
+}
+
 /// Returns true if the first list is a suffix of the second list.
 pub fn list_matches_from_end(list1: List(Int), list2: List(Int)) -> Bool {
   list_matches_up_to(list1 |> list.reverse, list2 |> list.reverse)
 }
 
 pub fn evaluate_program(state: Computer, expected_output: List(Int)) -> Result(Computer, Computer) {
-  let proceed = fn () {
-    state |> execute_instruction |> evaluate_program(expected_output)
-  }
-
   let has_reached_end = state.pointer >= list.length(state.program)
 
-  case has_reached_end, list_matches_up_to(state.output, expected_output) {
-    True, True -> case state.output == expected_output {
-      True -> Ok(state)
-      False -> Error(state)
-    }
+  // let next_state = state |> execute_program
+
+  // case next_state.output == expected_output {
+  //   True -> Ok(next_state)
+  //   False -> Error(next_state)
+  // }
+
+  case has_reached_end, list_matches(state.output, expected_output) {
+    True, True -> Ok(state)
+    // True, True -> case state.output == expected_output {
+    //   True -> Ok(state)
+    //   False -> Error(state)
+    // }
     True, False -> Error(state)
-    False, True -> proceed()
-    False, False -> Error(state)
+    False, _ -> state |> execute_instruction |> evaluate_program(expected_output)
+    // False, False -> Error(state)
   }
 }
 
@@ -390,67 +405,87 @@ pub fn part_1() {
   |> io.println
 }
 
+pub fn part_1_with_override(a: Int) {
+  let initial_state = "./data/day_17_debug.txt"
+  |> utils.read_lines
+  |> parse_input
+
+  let overridden_state = Computer(..initial_state, a: a)
+
+  overridden_state
+  |> debug_state
+  |> execute_program
+  |> format_output
+  |> io.println
+}
+
 pub fn get_numbers_with_prefix(prefix: Int) {
   yielder.unfold(prefix, fn (n) {
     let next = n + 1
 
-    case prefix == 0 || next |> int.to_base8 |> string.starts_with(prefix |> int.to_base8) {
-      True -> yielder.Next(n, next)
+    let max = 10000000000000000
+
+    case next > max {
+      True -> yielder.Done
       False -> {
-        let num_digits = { n |> int.to_base8 |> string.length } + 1 - { prefix |> int.to_base8 |> string.length }
-        let start_value = prefix * utils.int_power(8, num_digits)
-        yielder.Next(n, start_value)
+        case prefix == 0 || next |> int.to_base8 |> string.starts_with(prefix |> int.to_base8) {
+          True -> yielder.Next(n, next)
+          False -> {
+            let num_digits = { n |> int.to_base8 |> string.length } + 1 - { prefix |> int.to_base8 |> string.length }
+            let start_value = prefix * utils.int_power(8, num_digits)
+            // io.debug("New start value: " <> start_value |> int.to_base8)
+            yielder.Next(n, start_value)
+          }
+        }
       }
     }
   })
 }
-
-// pub fn get_numbers_with_prefix(prefix: Int) {
-//   yielder.unfold(prefix, fn (n) { yielder.Next(n, n + 1) })
-//   |> yielder.filter(fn (a) {
-//     prefix == 0 || a |> int.to_base8 |> string.starts_with(prefix |> int.to_base8)
-//   })
-// }
-
 
 pub fn solve_part_2(
   state: Computer,
   target_output: List(Int),
   base8_prefix: Int,
   use_last_n: Int
-) {
-  io.debug(use_last_n)
+) -> List(Int) {
+  // io.debug(use_last_n)
   let current_target_output = target_output |> list.reverse |> list.take(use_last_n) |> list.reverse
 
   io.debug(current_target_output)
   io.debug(base8_prefix |> int.to_base8)
 
-  let result = get_numbers_with_prefix(base8_prefix)
-  |> yielder.map(fn (a) {
-    let new_state = Computer(..state, a: a)
-    let final_state = new_state |> evaluate_program(current_target_output)
+  case use_last_n > list.length(target_output) {
+    False -> {
+      get_numbers_with_prefix(base8_prefix)
+      |> yielder.map(fn (a) {
+        let new_state = Computer(..state, a: a)
+        let final_state = new_state |> evaluate_program(current_target_output)
 
-    case final_state {
-      Ok(_) -> #(True, a)
-      _ -> #(False, a)
+        case final_state {
+          Ok(_) -> #(True, a)
+          _ -> #(False, a)
+        }
+      })
+      |> yielder.filter(fn (pair) {
+        let #(result, _) = pair
+        result == True
+      })
+
+      |> yielder.map(fn (pair) {
+        let #(_, value) = pair
+        value |> io.debug
+
+        solve_part_2(state, target_output, value, use_last_n + 1)
+      })
+      |> yielder.to_list
+      |> list.flatten
     }
-  })
-  |> yielder.drop_while(fn (pair) {
-    let #(result, _) = pair
-    result == False
-  })
-  |> yielder.filter(fn (pair) {
-    let #(result, _) = pair
-    result == True
-  })
-  |> yielder.first
-
-  case result {
-    Ok(#(True, value)) -> solve_part_2(state, target_output, value, use_last_n + 1)
-    _ -> Nil
+    True -> [base8_prefix]
   }
 }
 
+// This emits the correct answer but only as one of the debug outputs
+// TODO: Improve output
 pub fn part_2() {
   let initial_state = "./data/day_17.txt"
   |> utils.read_lines
@@ -458,7 +493,8 @@ pub fn part_2() {
 
   let initial_program = get_raw_program(initial_state)
 
-  solve_part_2(initial_state, initial_program, 5, 2)
+  solve_part_2(initial_state, initial_program, 0, 1)
+  |> io.debug
 }
 
 pub fn yield_until(max: Int) {
@@ -471,9 +507,10 @@ pub fn yield_until(max: Int) {
 }
 
 pub fn main() {
+  // part_1_with_override(0o5600532756025057)
   // part_1()
-  // get_numbers_with_prefix(0o2563)
-  // |> yielder.take(200)
+  // get_numbers_with_prefix(0o5600532756024)
+  // |> yielder.take(12)
   // |> yielder.map(fn (n) { n |> int.to_base8 |> io.debug })
   // |> yielder.to_list
 
