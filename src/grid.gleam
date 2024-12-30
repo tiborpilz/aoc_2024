@@ -35,6 +35,20 @@ pub fn from_lists(lists: List(List(a))) -> dict.Dict(Position, a) {
 }
 
 ///
+/// Fills a grid based on a single value of a specified size
+pub fn fill(value: a, size: #(Int, Int)) -> Grid(a) {
+  let #(height, width) = size
+
+  list.range(0, height - 1)
+  |> list.fold(dict.new(), fn(acc, row_index) {
+    list.range(0, width - 1)
+    |> list.fold(acc, fn(acc, col_index) {
+      dict.insert(acc, #(row_index, col_index), value)
+    })
+  })
+}
+
+///
 /// Updates a given entry (specified by a tuple of indices) only if it already
 /// exists.
 pub fn update_if_exists(grid: Grid(a), indices: Position, value: a) {

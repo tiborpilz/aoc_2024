@@ -14,6 +14,7 @@ import day_14
 import day_15
 import day_16
 import day_17
+import day_18
 import day_2
 import day_3
 import day_4
@@ -45,6 +46,7 @@ pub fn day_cmd(day: Int) -> glint.Command(Nil) {
     15 -> day_15.main()
     16 -> day_16.main()
     17 -> day_17.main()
+    18 -> day_18.main()
     _ -> panic as "Day not implemented!"
   }
 }
@@ -55,7 +57,7 @@ pub fn main() {
     |> glint.with_name("Advent of Code 2024")
     |> glint.pretty_help(glint.default_pretty_help())
 
-  list.range(1, 17)
+  list.range(1, 18)
   |> list.fold(gleam_app, fn(acc, curr) {
     acc |> glint.add(at: ["day_" <> int.to_string(curr)], do: day_cmd(curr))
   })

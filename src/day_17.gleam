@@ -1,14 +1,10 @@
-import gleam/result
-import gleam_community/ansi
 import gleam/list
 import gleam/yielder
 import gleam/int
 import gleam/string
-import gleam/erlang
 import utils
 import gleam/io
 import gleam/option.{None, Some}
-
 
 pub type Registers {
   Registers(a: Int, b: Int, c: Int)
