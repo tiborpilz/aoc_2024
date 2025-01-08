@@ -57,6 +57,37 @@ pub fn parse_input(lines: List(String)) {
   #(towels, designs)
 }
 
+pub fn get_design_combinations(
+  towels: List(List(Color)),
+  design: List(Color),
+  current_combination: List(List(Color)),
+  combinations: List(List(List(Color)))
+) -> List(List(List(Color))) {
+  io.debug(list.length(design))
+  case design {
+    [] -> [current_combination, ..combinations]
+    design -> {
+      let possible_towels = towels
+      |> list.filter(fn (towel) {
+        let new_design = list.drop(design, list.length(towel))
+        startswith(design, towel) && check_design(towels, new_design)
+      })
+
+      possible_towels
+      |> list.map(fn (towel) {
+        let new_design = list.drop(design, list.length(towel))
+        get_design_combinations(
+          towels,
+          new_design,
+          list.append(current_combination, [towel]),
+          combinations
+        )
+      })
+      |> list.flatten
+    }
+  }
+}
+
 pub fn check_design(towels: List(List(Color)), design: List(Color)) {
   case design {
     [] -> True
@@ -75,10 +106,17 @@ pub fn main() {
   |> utils.read_lines
   |> parse_input
 
-  list.filter(designs, fn (design) {
-    check_design(towels, design)
+  // list.filter(designs, fn (design) {
+  //   check_design(towels, design)
+  // })
+  // |> list.length
+  // |> io.debug
+
+  list.map(designs, fn (design) {
+    get_design_combinations(towels, design, [], [])
   })
-  |> list.length
+  |> list.map(fn (combinations) { combinations |> list.length })
+  |> utils.sum
   |> io.debug
 
   Nil
