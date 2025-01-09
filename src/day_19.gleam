@@ -1,8 +1,8 @@
+import gleam/io
+import gleam/list
 import gleam/result
 import gleam/string
 import utils
-import gleam/io
-import gleam/list
 
 pub type Color {
   White
@@ -13,8 +13,9 @@ pub type Color {
 }
 
 pub fn startswith(base_list: List(a), compare_list: List(a)) {
-  list.length(compare_list) <= list.length(base_list) && list.zip(base_list, compare_list)
-  |> list.all(fn (pair) {
+  list.length(compare_list) <= list.length(base_list)
+  && list.zip(base_list, compare_list)
+  |> list.all(fn(pair) {
     let #(a, b) = pair
     a == b
   })
@@ -34,7 +35,7 @@ pub fn parse_color(char: String) -> Result(Color, Nil) {
 pub fn parse_combination(raw_combination: String) -> Result(List(Color), Nil) {
   raw_combination
   |> string.split("")
-  |> list.map(fn (x) { parse_color(x) })
+  |> list.map(fn(x) { parse_color(x) })
   |> result.all
 }
 
@@ -45,45 +46,47 @@ pub fn parse_input(lines: List(String)) {
 
   let assert [raw_towels, "", ..raw_designs] = lines
 
-  let assert Ok(towels) = raw_towels
-  |> string.split(", ")
-  |> list.map(fn (x) { parse_combination(x) })
-  |> result.all
+  let assert Ok(towels) =
+    raw_towels
+    |> string.split(", ")
+    |> list.map(fn(x) { parse_combination(x) })
+    |> result.all
 
-  let assert Ok(designs) = raw_designs
-  |> list.map(fn (x) { parse_combination(x) })
-  |> result.all
+  let assert Ok(designs) =
+    raw_designs
+    |> list.map(fn(x) { parse_combination(x) })
+    |> result.all
 
   #(towels, designs)
 }
 
+// This _should_ work but it runs for way too long
 pub fn get_design_combinations(
   towels: List(List(Color)),
   design: List(Color),
   current_combination: List(List(Color)),
-  combinations: List(List(List(Color)))
 ) -> List(List(List(Color))) {
-  io.debug(list.length(design))
   case design {
-    [] -> [current_combination, ..combinations]
+    [] -> [current_combination]
     design -> {
-      let possible_towels = towels
-      |> list.filter(fn (towel) {
-        let new_design = list.drop(design, list.length(towel))
-        startswith(design, towel) && check_design(towels, new_design)
-      })
+      let possible_towels =
+        towels
+        |> list.filter(fn(towel) { startswith(design, towel) })
 
-      possible_towels
-      |> list.map(fn (towel) {
-        let new_design = list.drop(design, list.length(towel))
-        get_design_combinations(
-          towels,
-          new_design,
-          list.append(current_combination, [towel]),
-          combinations
-        )
-      })
-      |> list.flatten
+      case possible_towels {
+        [] -> [[[]]]
+        _ ->
+          possible_towels
+          |> list.map(fn(towel) {
+            let new_design = list.drop(design, list.length(towel))
+            get_design_combinations(
+              towels,
+              new_design,
+              list.append(current_combination, [towel]),
+            )
+          })
+          |> list.flatten
+      }
     }
   }
 }
@@ -93,7 +96,7 @@ pub fn check_design(towels: List(List(Color)), design: List(Color)) {
     [] -> True
     design -> {
       towels
-      |> list.any(fn (towel) {
+      |> list.any(fn(towel) {
         let new_design = list.drop(design, list.length(towel))
         startswith(design, towel) && check_design(towels, new_design)
       })
@@ -102,9 +105,12 @@ pub fn check_design(towels: List(List(Color)), design: List(Color)) {
 }
 
 pub fn main() {
-  let #(towels, designs) = "./data/day_19.txt"
-  |> utils.read_lines
-  |> parse_input
+  let #(towels, designs) =
+    "./data/day_19.txt"
+    |> utils.read_lines
+    |> parse_input
+
+  // Part 1
 
   // list.filter(designs, fn (design) {
   //   check_design(towels, design)
@@ -112,10 +118,16 @@ pub fn main() {
   // |> list.length
   // |> io.debug
 
-  list.map(designs, fn (design) {
-    get_design_combinations(towels, design, [], [])
+  // Part 2
+  list.map(designs, fn(design) {
+    io.debug("start")
+    get_design_combinations(towels, design, [])
   })
-  |> list.map(fn (combinations) { combinations |> list.length })
+  |> list.map(fn(combinations) {
+    combinations
+    |> list.filter(fn(combination) { combination != [[]] })
+    |> list.length
+  })
   |> utils.sum
   |> io.debug
 

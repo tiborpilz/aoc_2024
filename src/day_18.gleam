@@ -1,10 +1,10 @@
-import gleam/float
-import gleam/result
 import gleam/bool
-import gleam/io
 import gleam/dict
+import gleam/float
 import gleam/int
+import gleam/io
 import gleam/list
+import gleam/result
 import gleam/string
 import grid
 import utils
@@ -15,17 +15,16 @@ pub type MemorySpace {
   Path
 }
 
-pub type Map = grid.Grid(MemorySpace)
+pub type Map =
+  grid.Grid(MemorySpace)
 
 /// Grid of Safe or Non-Safe spaces with incoming corruption coordinates
 pub type MemoryState {
-  MemoryState(
-    grid: Map,
-    incoming_corruptions: List(grid.Position),
-  )
+  MemoryState(grid: Map, incoming_corruptions: List(grid.Position))
 }
 
-pub type Path = List(grid.Position)
+pub type Path =
+  List(grid.Position)
 
 pub fn parse_input(input: List(String), size: #(Int, Int)) -> MemoryState {
   let empty_grid = grid.fill(Safe, size)
@@ -53,9 +52,7 @@ pub fn stringify_space(tile: MemorySpace) {
 
 pub fn debug_grid(grid: Map) {
   grid
-  |> dict.map_values(fn(_, value) {
-    stringify_space(value)
-  })
+  |> dict.map_values(fn(_, value) { stringify_space(value) })
   |> grid.pretty_print
 
   grid
@@ -68,11 +65,7 @@ pub fn get_score(position: grid.Position, scores: grid.Grid(Float)) -> Float {
   }
 }
 
-pub fn a_star(
-  start: grid.Position,
-  target: grid.Position,
-  map: Map
-) {
+pub fn a_star(start: grid.Position, target: grid.Position, map: Map) {
   let open_set = [start]
   let g_score = dict.new() |> dict.insert(start, 0.0)
   let f_score = dict.new() |> dict.insert(start, get_heuristic(start, target))
@@ -81,7 +74,7 @@ pub fn a_star(
 }
 
 pub fn replay_path(initial_state: MemoryState, path: Path) {
-  list.index_fold(path, initial_state.grid, fn (acc, curr, index) {
+  list.index_fold(path, initial_state.grid, fn(acc, curr, index) {
     let new_grid = get_grid_at_time(initial_state, index + 1)
 
     dict.insert(new_grid, curr, Path) |> debug_grid
@@ -90,15 +83,10 @@ pub fn replay_path(initial_state: MemoryState, path: Path) {
 
 pub fn insert_path(grid: Map, path: Path) -> Map {
   path
-  |> list.fold(grid, fn (acc, curr) {
-    dict.insert(acc, curr, Path)
-  })
+  |> list.fold(grid, fn(acc, curr) { dict.insert(acc, curr, Path) })
 }
 
-pub fn get_grid_at_time(
-  memory_state: MemoryState,
-  time: Int,
-) -> Map {
+pub fn get_grid_at_time(memory_state: MemoryState, time: Int) -> Map {
   memory_state.incoming_corruptions
   |> list.take(time)
   |> list.fold(memory_state.grid, fn(acc, curr) {
@@ -114,17 +102,10 @@ pub fn debug_path(path: Path, map: Map) {
 }
 
 /// Get all surrounding positions (in a cross pattern) of a given position.
-pub fn get_surrounding_positions(
-  position: grid.Position,
-) -> List(grid.Position) {
+pub fn get_surrounding_positions(position: grid.Position) -> List(grid.Position) {
   let #(y, x) = position
 
-  [
-    #(y - 1, x),
-    #(y, x + 1),
-    #(y + 1, x),
-    #(y, x - 1),
-  ]
+  [#(y - 1, x), #(y, x + 1), #(y + 1, x), #(y, x - 1)]
 }
 
 pub fn get_possible_steps(map: Map, position: grid.Position) {
@@ -152,14 +133,11 @@ pub fn get_distance(a: grid.Position, b: grid.Position) {
 pub fn reconstruct_path(
   came_from: grid.Grid(grid.Position),
   current: grid.Position,
-  total_path: Path
+  total_path: Path,
 ) {
   case dict.get(came_from, current) {
-    Ok(value) -> reconstruct_path(
-      came_from,
-      value,
-      list.prepend(total_path, current)
-    )
+    Ok(value) ->
+      reconstruct_path(came_from, value, list.prepend(total_path, current))
     _ -> list.prepend(total_path, current)
   }
 }
@@ -187,7 +165,7 @@ pub fn handle_neighbors_of_current(
 ) {
   case neighbors {
     [neighbor, ..rest] -> {
-      use <- bool.lazy_guard(is_corrupted(map, neighbor), fn () {
+      use <- bool.lazy_guard(is_corrupted(map, neighbor), fn() {
         handle_neighbors_of_current(
           rest,
           g_score,
@@ -196,23 +174,33 @@ pub fn handle_neighbors_of_current(
           current,
           target,
           open_set,
-          map
+          map,
         )
       })
 
-      let tentative_g_score = case dict.get(g_score, current) {
-        Ok(value) -> value
-        Error(_) -> infinity() |> int.to_float
-      } +. { get_heuristic(target, current) }
+      let tentative_g_score =
+        case dict.get(g_score, current) {
+          Ok(value) -> value
+          Error(_) -> infinity() |> int.to_float
+        }
+        +. { get_heuristic(target, current) }
 
-      case tentative_g_score <. case dict.get(g_score, neighbor) {
-        Ok(value) -> value
-        Error(_) -> infinity() |> int.to_float
-      } {
+      case
+        tentative_g_score
+        <. case dict.get(g_score, neighbor) {
+          Ok(value) -> value
+          Error(_) -> infinity() |> int.to_float
+        }
+      {
         True -> {
           let came_from = dict.insert(came_from, neighbor, current)
           let g_score = dict.insert(g_score, neighbor, tentative_g_score)
-          let f_score = dict.insert(f_score, neighbor, tentative_g_score +. get_heuristic(neighbor, target))
+          let f_score =
+            dict.insert(
+              f_score,
+              neighbor,
+              tentative_g_score +. get_heuristic(neighbor, target),
+            )
 
           let open_set = case list.contains(open_set, neighbor) {
             False -> [neighbor, ..open_set]
@@ -227,28 +215,32 @@ pub fn handle_neighbors_of_current(
             current,
             target,
             open_set,
-            map
+            map,
           )
         }
 
-        False -> handle_neighbors_of_current(
-          rest,
-          f_score,
-          g_score,
-          came_from,
-          current,
-          target,
-          open_set,
-          map
-        )
+        False ->
+          handle_neighbors_of_current(
+            rest,
+            f_score,
+            g_score,
+            came_from,
+            current,
+            target,
+            open_set,
+            map,
+          )
       }
     }
     [] -> do_a_star(f_score, g_score, came_from, target, open_set, map)
   }
 }
 
-pub fn sort_by_f_score(positions: List(grid.Position), f_score: grid.Grid(Float)) -> List(grid.Position) {
-  list.sort(positions, fn (a, b) {
+pub fn sort_by_f_score(
+  positions: List(grid.Position),
+  f_score: grid.Grid(Float),
+) -> List(grid.Position) {
+  list.sort(positions, fn(a, b) {
     let a_score = get_score(a, f_score)
     let b_score = get_score(b, f_score)
     float.compare(a_score, b_score)
@@ -261,7 +253,7 @@ pub fn do_a_star(
   came_from: grid.Grid(grid.Position),
   target: grid.Position,
   open_set: List(grid.Position),
-  map: Map
+  map: Map,
 ) {
   case list.is_empty(open_set) {
     False -> {
@@ -272,7 +264,7 @@ pub fn do_a_star(
 
       use <- bool.guard(
         current == target,
-        Ok(reconstruct_path(came_from, current, []))
+        Ok(reconstruct_path(came_from, current, [])),
       )
 
       let open_set = list.filter(open_set, fn(value) { value != current })
@@ -285,7 +277,7 @@ pub fn do_a_star(
         current,
         target,
         open_set,
-        map
+        map,
       )
     }
     True -> Error(Nil)
@@ -307,39 +299,40 @@ pub fn solve_grid(
 
   case checked, is_target {
     Ok(True), _ -> paths
-    _, True -> [
-      [current_position, ..current_path] |> list.reverse,
-      ..paths
-    ]
+    _, True -> [[current_position, ..current_path] |> list.reverse, ..paths]
     _, _ -> {
       let new_grid = memory_state.grid
 
       let new_state = MemoryState(..memory_state, grid: new_grid)
-      let steps = get_possible_steps(new_grid, current_position)
-      |> list.sort(fn (a, b) {
-        float.compare(get_heuristic(a, target_position), get_heuristic(b, target_position))
-      })
+      let steps =
+        get_possible_steps(new_grid, current_position)
+        |> list.sort(fn(a, b) {
+          float.compare(
+            get_heuristic(a, target_position),
+            get_heuristic(b, target_position),
+          )
+        })
 
-      let new_came_from = list.fold(steps, came_from, fn (acc, curr) {
-        dict.insert(acc, curr, current_position)
-      })
+      let new_came_from =
+        list.fold(steps, came_from, fn(acc, curr) {
+          dict.insert(acc, curr, current_position)
+        })
 
-      let possible_path = list.map(steps, fn (step) {
-        solve_grid(
-          new_state,
-          step,
-          [current_position, ..current_path],
-          paths,
-          target_position,
-          dict.insert(already_checked, current_position, True),
-          new_came_from,
-          current_time + 1,
-        )
-      })
-      |> list.sort(fn (a, b) {
-        int.compare(list.length(a), list.length(b))
-      })
-      |> list.flatten()
+      let possible_path =
+        list.map(steps, fn(step) {
+          solve_grid(
+            new_state,
+            step,
+            [current_position, ..current_path],
+            paths,
+            target_position,
+            dict.insert(already_checked, current_position, True),
+            new_came_from,
+            current_time + 1,
+          )
+        })
+        |> list.sort(fn(a, b) { int.compare(list.length(a), list.length(b)) })
+        |> list.flatten()
       // |> list.first
 
       // case possible_path {
@@ -357,17 +350,14 @@ pub fn get_path_length(path: Path) {
 pub fn solve_for_time(state: MemoryState, size: Int, time: Int) {
   let grid_at_time = get_grid_at_time(state, time)
 
-  a_star(
-    #(0, 0),
-    #(size - 1, size - 1),
-    grid_at_time
-  )
+  a_star(#(0, 0), #(size - 1, size - 1), grid_at_time)
 }
 
 pub fn part_1_generic(file: String, size: Int, time: Int) {
-  let start_state = file
-  |> utils.read_lines
-  |> parse_input(#(size, size))
+  let start_state =
+    file
+    |> utils.read_lines
+    |> parse_input(#(size, size))
 
   let assert Ok(path) = solve_for_time(start_state, size, time)
 
@@ -383,41 +373,44 @@ pub fn part_1() {
 }
 
 pub fn part_2_generic(file: String, size: Int, offset: Int) {
-  let start_state = file
-  |> utils.read_lines
-  |> parse_input(#(size, size))
+  let start_state =
+    file
+    |> utils.read_lines
+    |> parse_input(#(size, size))
 
   let total_bytes = file |> utils.read_lines |> list.length
 
-  let working_times = list.range(total_bytes - 1, offset)
-  // |> list.map(fn (time) {
-  //   io.debug(time)
-  //   utils.at(start_state.incoming_corruptions, time) |> io.debug
-  //   time
-  // })
-  |> list.take_while(fn (time) {
-    case solve_for_time(start_state, size, time) {
-      Ok(path) -> {
-        start_state
-        |> get_grid_at_time(time)
-        |> debug_path(path, _)
-        io.debug(time)
-        False
-      }
-      _ -> {
-        start_state
-        |> get_grid_at_time(time)
-        |> debug_grid
+  let working_times =
+    list.range(total_bytes - 1, offset)
+    // |> list.map(fn (time) {
+    //   io.debug(time)
+    //   utils.at(start_state.incoming_corruptions, time) |> io.debug
+    //   time
+    // })
+    |> list.take_while(fn(time) {
+      case solve_for_time(start_state, size, time) {
+        Ok(path) -> {
+          start_state
+          |> get_grid_at_time(time)
+          |> debug_path(path, _)
+          io.debug(time)
+          False
+        }
+        _ -> {
+          start_state
+          |> get_grid_at_time(time)
+          |> debug_grid
 
-        io.debug(time)
-        True
+          io.debug(time)
+          True
+        }
       }
-    }
-  })
+    })
 
   let assert Ok(lowest_nonworking_time) = list.last(working_times)
 
-  utils.at(start_state.incoming_corruptions, lowest_nonworking_time - 1) |> io.debug
+  utils.at(start_state.incoming_corruptions, lowest_nonworking_time - 1)
+  |> io.debug
 }
 
 pub fn part_2_test() {
