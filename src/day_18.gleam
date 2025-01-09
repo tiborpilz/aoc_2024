@@ -74,7 +74,7 @@ pub fn a_star(start: grid.Position, target: grid.Position, map: Map) {
 }
 
 pub fn replay_path(initial_state: MemoryState, path: Path) {
-  list.index_fold(path, initial_state.grid, fn(acc, curr, index) {
+  list.index_fold(path, initial_state.grid, fn(_acc, curr, index) {
     let new_grid = get_grid_at_time(initial_state, index + 1)
 
     dict.insert(new_grid, curr, Path) |> debug_grid
@@ -318,27 +318,20 @@ pub fn solve_grid(
           dict.insert(acc, curr, current_position)
         })
 
-      let possible_path =
-        list.map(steps, fn(step) {
-          solve_grid(
-            new_state,
-            step,
-            [current_position, ..current_path],
-            paths,
-            target_position,
-            dict.insert(already_checked, current_position, True),
-            new_came_from,
-            current_time + 1,
-          )
-        })
-        |> list.sort(fn(a, b) { int.compare(list.length(a), list.length(b)) })
-        |> list.flatten()
-      // |> list.first
-
-      // case possible_path {
-      //   Ok(path) -> path
-      //   _ -> paths
-      // }
+      list.map(steps, fn(step) {
+        solve_grid(
+          new_state,
+          step,
+          [current_position, ..current_path],
+          paths,
+          target_position,
+          dict.insert(already_checked, current_position, True),
+          new_came_from,
+          current_time + 1,
+        )
+      })
+      |> list.sort(fn(a, b) { int.compare(list.length(a), list.length(b)) })
+      |> list.flatten()
     }
   }
 }
@@ -382,11 +375,6 @@ pub fn part_2_generic(file: String, size: Int, offset: Int) {
 
   let working_times =
     list.range(total_bytes - 1, offset)
-    // |> list.map(fn (time) {
-    //   io.debug(time)
-    //   utils.at(start_state.incoming_corruptions, time) |> io.debug
-    //   time
-    // })
     |> list.take_while(fn(time) {
       case solve_for_time(start_state, size, time) {
         Ok(path) -> {
@@ -422,7 +410,7 @@ pub fn part_2() {
 }
 
 pub fn main() {
-  part_2()
+  let _ = part_2()
 
   Nil
 }
